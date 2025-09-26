@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "scrape-kjv": "dotnet run -- kjv"
+  }
+}
