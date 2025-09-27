@@ -10,7 +10,7 @@ public class OpenAIService
   {
     // Generate embeddings
     var texts = batch.ConvertAll(v => v.text);
-    var embeddingClient = openAIClient.GetEmbeddingClient(Environment.GetEnvironmentVariable("OPEN_AI_DEPLOYMENT_NAME")!);
+    var embeddingClient = openAIClient.GetEmbeddingClient(Environment.GetEnvironmentVariable("OPEN_AI_TEXT_EMBEDDING_NAME")!);
     var embeddingsResponse = await embeddingClient.GenerateEmbeddingsAsync(texts);
     var embeddings = embeddingsResponse.Value;
 
