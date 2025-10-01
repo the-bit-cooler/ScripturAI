@@ -8,7 +8,7 @@ namespace ScripturAI;
 
 public class FetchBibleBookChapter
 {
-  private record Verse(string? verseId, string book, int chapter, int verse, string text);
+  private record Verse(string verseId, string version, string book, int chapter, int verse, string text);
   private readonly ILogger<FetchBibleBookChapter> _logger;
 
   public FetchBibleBookChapter(ILogger<FetchBibleBookChapter> logger)
