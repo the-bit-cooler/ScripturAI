@@ -1,29 +1,42 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+import { Platform } from "react-native";
 
-import { Platform } from 'react-native';
+export type ThemeName = "light" | "dark" | "sepia";
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+const tintSepia = "#8B5E3C";
 
-export const Colors = {
+export const Colors: Record<ThemeName, any> = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: "#222222",              // Main scripture text
+    background: "#FAF9F6",        // Page background
+    verseBackground: "#FAF9F6",   // Individual verse background
+    cardBackground: "#F5F0E6",    // Headers, tab bars, panels
+    tint: "#3B82F6",              // Action colors, links, highlights
+    icon: "#687076",              // Icons
+    tabIconDefault: "#687076",    // Unselected tab icon
+    tabIconSelected: "#3B82F6",   // Selected tab icon
+    verseNumber: "#7C83FD",       // Verse numbers
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: "#ECEDEE",              // Main scripture text
+    background: "#151718",        // Page background
+    verseBackground: "#1E1E1E",   // Individual verse background
+    cardBackground: "#212121",    // Headers, tab bars, panels
+    tint: "#60A5FA",              // Action colors, links, highlights
+    icon: "#9BA1A6",              // Icons
+    tabIconDefault: "#9BA1A6",    // Unselected tab icon
+    tabIconSelected: "#60A5FA",   // Selected tab icon
+    verseNumber: "#A0A7FF",       // Verse numbers
+  },
+  sepia: {
+    text: "#3E2F1C",              // Main scripture text
+    background: "#F4ECD8",        // Page background
+    verseBackground: "#EFE2C6",   // Individual verse background
+    cardBackground: "#E8D9B5",    // Headers, tab bars, panels
+    tint: "#8B5E3C",              // Action colors, links, highlights
+    icon: "#8B5E3C",              // Icons
+    tabIconDefault: "#8B5E3C",    // Unselected tab icon
+    tabIconSelected: "#8B5E3C",   // Selected tab icon
+    verseNumber: "#C47F3B",       // Verse numbers
   },
 };
 

@@ -1,24 +1,24 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack } from "expo-router";
 import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { AppThemeProvider } from '@/hooks/use-app-theme-provider';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <ActionSheetProvider>
+      <AppThemeProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="book-picker" options={{ presentation: 'modal', headerShown: false }} />
+          <Stack.Screen name="settings" options={{ presentation: 'modal', title: 'Settings' }} />
+          <Stack.Screen name="similar-verses" options={{ presentation: 'modal', title: 'Similar Verses' }} />
+          <Stack.Screen name="verse-explanation" options={{ presentation: 'modal', title: 'Verse Explanation' }} />
+        </Stack>
+        <StatusBar style="auto" />
+      </AppThemeProvider>
+    </ActionSheetProvider>
   );
 }

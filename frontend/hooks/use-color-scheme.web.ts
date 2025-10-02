@@ -1,21 +1,27 @@
-import { useEffect, useState } from 'react';
-import { useColorScheme as useRNColorScheme } from 'react-native';
+import { useEffect, useState } from "react";
+import { useColorScheme as useRNColorScheme } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ThemeName } from "@/constants/theme";
 
-/**
- * To support static rendering, this value needs to be re-calculated on the client side for web
- */
-export function useColorScheme() {
+export function useColorScheme(): ThemeName {
+  const [theme, setTheme] = useState<ThemeName>("light");
   const [hasHydrated, setHasHydrated] = useState(false);
 
   useEffect(() => {
-    setHasHydrated(true);
+    (async () => {
+      const stored = await AsyncStorage.getItem("app-theme");
+      if (!stored || stored === "system") {
+        const sys = useRNColorScheme() ?? "light";
+        setTheme(sys as ThemeName);
+      } else {
+        setTheme(stored as ThemeName);
+      }
+      setHasHydrated(true);
+    })();
   }, []);
 
-  const colorScheme = useRNColorScheme();
+  // During SSR or pre-hydration, return 'light'
+  if (!hasHydrated) return "light";
 
-  if (hasHydrated) {
-    return colorScheme;
-  }
-
-  return 'light';
+  return theme;
 }

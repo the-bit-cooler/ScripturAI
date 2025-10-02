@@ -1,98 +1,185 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { FlashList } from "@shopify/flash-list";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { memo, useEffect, useRef, useState } from "react";
+import { StyleSheet, TouchableOpacity } from "react-native";
+import PagerView from "react-native-pager-view";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { fetchChapter } from "@/hooks/use-fetch-chapter";
+import { useVerseContextMenu } from "@/hooks/use-verse-context-menu";
+import { useThemeColor } from "@/hooks/use-theme-color";
 
-export default function HomeScreen() {
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { CenteredActivityIndicator } from "@/components/ui/centered-activity-indicator";
+
+import { Verse } from "@/types/verse";
+
+import bookChapterCounts from "@/assets/data/book-chapter-counts.json";
+
+type VerseItemProps = {
+  verse: Verse;
+  onContextMenu: (verse: Verse) => void
+};
+
+// Memoized VerseItem component
+const VerseItem = memo(({ verse, onContextMenu }: VerseItemProps) => {
+  const verseNumberColor = useThemeColor({}, "verseNumber");
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Ello Wurld!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
+    <TouchableOpacity onLongPress={() => onContextMenu(verse)}>
+      <ThemedText
+        type="subtitle"
+        style={styles.verseText}
+      >
+        <ThemedText type="defaultSemiBold" style={[styles.verseNumber, { color: verseNumberColor }]}>
+          {'     '}
+          {verse.verse}
+          {'   '}
         </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+        {verse.text}
+      </ThemedText>
+    </TouchableOpacity>
+  );
+});
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
+type ChapterPageProps = {
+  book: string;
+  chapterNumber: number;
+  shouldLoad: boolean;
+  onContextMenu: (verse: Verse) => void;
+}
+
+const ChapterPage = ({ book, chapterNumber, shouldLoad, onContextMenu }: ChapterPageProps) => {
+  const [verses, setVerses] = useState<Verse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const hasFetched = useRef(false);
+  const backgroundColor = useThemeColor({}, "verseBackground");
+
+  useEffect(() => {
+    if (shouldLoad && !hasFetched.current) {
+      const loadChapter = async () => {
+        try {
+          setLoading(true);
+          const chapterData = await fetchChapter("KJV", book, chapterNumber);
+          setVerses(chapterData);
+          hasFetched.current = true;
+        } catch (error) {
+          console.error(`Failed to load chapter ${chapterNumber}:`, error);
+          setVerses([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      loadChapter();
+    }
+  }, [book, chapterNumber, shouldLoad]);
+
+  if (!shouldLoad || loading) {
+    return (
+      <CenteredActivityIndicator size="large" color="#00ff00" />
+    );
+  }
+
+  if (!verses) {
+    return (
+      <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor }}>
+        <ThemedText>Chapter failed to load. Please try again.</ThemedText>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    );
+  }
+
+  return (
+    <ThemedView style={[styles.verseContainer, { backgroundColor }]}>
+      <FlashList
+        data={verses}
+        keyExtractor={(verse) => verse.verse.toString()}
+        renderItem={({ item: verse }) => (
+          <VerseItem
+            verse={verse}
+            onContextMenu={onContextMenu}
+          />
+        )}
+      />
+    </ThemedView>
+  );
+};
+
+export default function BookReader() {
+  let { book } = useLocalSearchParams<{ book: string }>();
+  if (!book) {
+    book = "John"; // Default book if none provided
+  }
+
+  const [chapter, setChapter] = useState(1);
+  const [title, setTitle] = useState(`${book} 1`);
+  const [loadedChapters, setLoadedChapters] = useState<number[]>([1]); // Start with chapter 1
+  const { onContextMenu } = useVerseContextMenu();
+
+  const totalChapters = (bookChapterCounts as Record<string, number>)[book];
+  const chapterNumbers = Array.from({ length: totalChapters }, (_, i) => i + 1);
+
+  // Preload adjacent chapters
+  const preloadAdjacentChapters = (currentChapter: number) => {
+    const adjacentChapters = [
+      currentChapter,
+      currentChapter - 1,
+      currentChapter + 1,
+    ].filter((ch) => ch >= 1 && ch <= totalChapters && !loadedChapters.includes(ch));
+
+    if (adjacentChapters.length > 0) {
+      setLoadedChapters((prev) => [...new Set([...prev, ...adjacentChapters])]);
+    }
+  };
+
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          title: title,
+        }}
+      />
+      <PagerView
+        style={{ flex: 1 }}
+        initialPage={chapter - 1} // Start at the selected chapter
+        offscreenPageLimit={1} // Render current + 1 adjacent page each side
+        onPageScroll={(e) => {
+          const { position, offset } = e.nativeEvent;
+          // Calculate the current chapter during swipe (1-based)
+          const currentChapter = Math.round(position + offset) + 1;
+          setTitle(`${book} ${currentChapter}`);
+        }}
+        onPageSelected={(e) => {
+          const newChapter = e.nativeEvent.position + 1;
+          setChapter(newChapter); // Update current chapter
+          setTitle(`${book} ${newChapter}`); // Finalize title
+          preloadAdjacentChapters(newChapter);
+        }}
+      >
+        {chapterNumbers.map((ch) => (
+          <ChapterPage
+            key={ch}
+            chapterNumber={ch}
+            book={book}
+            shouldLoad={loadedChapters.includes(ch)}
+            onContextMenu={onContextMenu}
+          />
+        ))}
+      </PagerView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  verseContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  verseText: {
+    marginVertical: 8,
+    paddingHorizontal: 16,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  verseNumber: {
+    fontWeight: "bold",
+  }
 });
