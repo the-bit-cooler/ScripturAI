@@ -269,3 +269,5 @@ __azurite_db_table*
 __azurite_db_blob*
 __blobstorage__
 __queuestorage__
+
+.env*
