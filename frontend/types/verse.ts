@@ -1,4 +1,3 @@
-// create interface for verse
 export interface Verse {
   verseId: string;
   version: string;
