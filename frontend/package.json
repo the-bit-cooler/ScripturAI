@@ -13,7 +13,6 @@
     "lint": "expo lint"
   },
   "dependencies": {
-    "@appandflow/expo-context-menu": "^0.1.20",
     "@expo/metro-runtime": "~6.1.2",
     "@expo/react-native-action-sheet": "^4.1.1",
     "@expo/vector-icons": "^15.0.2",
