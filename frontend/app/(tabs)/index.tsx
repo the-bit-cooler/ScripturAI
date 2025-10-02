@@ -76,7 +76,7 @@ const ChapterPage = ({ book, chapterNumber, shouldLoad, onContextMenu }: Chapter
 
   if (!shouldLoad || loading) {
     return (
-      <CenteredActivityIndicator size="large" color="#00ff00" />
+      <CenteredActivityIndicator size="large" />
     );
   }
 

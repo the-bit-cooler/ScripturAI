@@ -56,7 +56,7 @@ export default function SimilarVerseScreen() {
   return (
     <ThemedView style={styles.container}>
       {loading ? (
-        <CenteredActivityIndicator size="large" color="#00ff00" />
+        <CenteredActivityIndicator size="large" />
       ) : error ? (
         <ThemedText type="default" style={styles.errorText}>
           {error}

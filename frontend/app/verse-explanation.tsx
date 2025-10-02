@@ -9,6 +9,8 @@ import { ThemedView } from '@/components/themed-view';
 import { CenteredActivityIndicator } from '@/components/ui/centered-activity-indicator';
 import { IconSymbol, IconSymbolName } from '@/components/ui/icon-symbol';
 
+import { useThemeColor } from '@/hooks/use-theme-color';
+
 type VerseExplanationParams = {
   version: string;
   book: string;
@@ -23,6 +25,12 @@ export default function VerseExplanationScreen() {
   const [explanation, setExplanation] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // ✅ use theme defaults
+  const headerBg = useThemeColor({}, 'cardBackground');
+  const iconColor = useThemeColor({}, 'textSecondary');
+  const explanationBg = useThemeColor({}, 'verseBackground');
+  const errorColor = useThemeColor({}, 'error');
 
   useEffect(() => {
     fetchSimilarVerses();
@@ -46,11 +54,11 @@ export default function VerseExplanationScreen() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+      headerBackgroundColor={{ light: headerBg, dark: headerBg, sepia: headerBg }}
       headerImage={
         <IconSymbol
           size={220}
-          color="#808080"
+          color={iconColor}
           name={icon}
           style={styles.headerImage}
         />
@@ -58,9 +66,9 @@ export default function VerseExplanationScreen() {
 
     <ThemedView style={styles.container}>
       {loading ? (
-        <CenteredActivityIndicator size="large" color="#00ff00" />
+        <CenteredActivityIndicator size="large" />
       ) : error ? (
-        <ThemedText type="default" style={styles.errorText}>
+        <ThemedText type="default" style={[styles.errorText, { color: errorColor }]}>
           {error}
         </ThemedText>
       ) : explanation ? (
