@@ -8,7 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import newTestamentBooks from '@/assets/data/new-testament.json';
 import oldTestamentBooks from '@/assets/data/old-testament.json';
 
-export default function ModalScreen() {
+export default function BookPickerScreen() {
   const router = useRouter();
   const { colors } = useTheme();
 
