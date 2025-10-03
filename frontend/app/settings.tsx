@@ -1,5 +1,6 @@
-import { View, Button, StyleSheet, Alert, ScrollView, TouchableOpacity, Appearance } from "react-native";
+import { View, Button, StyleSheet, Alert, ScrollView, TouchableOpacity, Appearance, Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 
 import { useAppTheme } from "@/hooks/use-app-theme-provider";
 
@@ -12,6 +13,13 @@ const themeOptions = ["light", "dark", "sepia", "system"] as const;
 
 export default function SettingsScreen() {
   const { theme, setTheme } = useAppTheme();
+  const version = Constants.expoConfig?.version ?? "N/A";
+
+  // iOS uses buildNumber, Android uses versionCode
+  const buildIdentifier =
+    Platform.OS === "ios"
+      ? `Build Number ${Constants.expoConfig?.ios?.buildNumber ?? "N/A"}`
+      : `Version Code ${Constants.expoConfig?.android?.versionCode ?? "N/A"}`;
 
   const clearStorage = async () => {
     Alert.alert(
@@ -35,7 +43,7 @@ export default function SettingsScreen() {
   const showAbout = () => {
     Alert.alert(
       "About ScripturAI",
-      "App Version 1.0.0\n\Built with Expo + React Native\n© 2025 The Bit Cooler\n\nIn ❤️❤️ memory of Charlie Kirk"
+      `Built with Expo + React Native\nApp Version ${version}\n${buildIdentifier}\n© 2025 The Bit Cooler\n\nIn ❤️❤️ memory of Charlie Kirk`
     );
   };
 
