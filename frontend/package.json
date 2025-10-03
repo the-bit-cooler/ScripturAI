@@ -3,10 +3,11 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "generate-env": "bash scripts/generate-env.sh",
+    "env-local:generate": "bash scripts/generate-env.sh",
+    "env-remote:list": "eas env:list --include-sensitive",
     "check": "npx expo install --check",
     "export": "npx expo export",
-    "export:clear": "npx expo export --clear ",
+    "export:clear": "npx expo export --clear",
     "ios:preview": "eas build --platform ios --profile preview",
     "ios:production": "eas build --platform ios --profile production",
     "ios:submit": "eas submit --platform ios",
