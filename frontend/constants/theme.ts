@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 
-export type ThemeName = "light" | "dark" | "sepia";
+export type ThemeName = "light" | "dark" | "sepia" | 'error';
 
 const tintSepia = "#8B5E3C";
 
@@ -38,6 +38,9 @@ export const Colors: Record<ThemeName, any> = {
     tabIconSelected: "#8B5E3C",   // Selected tab icon
     verseNumber: "#C47F3B",       // Verse numbers
   },
+  error: {
+    text: "#FF3B30"
+  }
 };
 
 export const Fonts = Platform.select({

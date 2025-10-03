@@ -13,6 +13,7 @@ import { ThemedView } from "@/components/themed-view";
 import { CenteredActivityIndicator } from "@/components/ui/centered-activity-indicator";
 
 import { Verse } from "@/types/verse";
+import { Colors } from "@/constants/theme";
 
 import bookChapterCounts from "@/assets/data/book-chapter-counts.json";
 
@@ -83,10 +84,10 @@ const ChapterPage = ({ book, chapterNumber, shouldLoad, onContextMenu }: Chapter
     );
   }
 
-  if (!verses) {
+  if ((verses?.length ?? 0) === 0) {
     return (
-      <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor }}>
-        <ThemedText>Chapter failed to load. Please try again.</ThemedText>
+      <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ThemedText style={{ color: Colors.error.text, fontWeight: "bold" }}>Chapter failed to load. Please try again later.</ThemedText>
       </ThemedView>
     );
   }

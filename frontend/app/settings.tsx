@@ -82,7 +82,7 @@ export default function SettingsScreen() {
         })}
 
         <View style={{ marginTop: 40 }}>
-          <Button title="Clear App Data" color="#FF3B30" onPress={clearStorage} />
+          <Button title="Clear App Data" color={Colors.error.text} onPress={clearStorage} />
         </View>
 
         <View style={{ marginTop: 40 }}>
