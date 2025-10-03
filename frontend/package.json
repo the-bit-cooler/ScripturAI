@@ -7,11 +7,14 @@
     "check": "npx expo install --check",
     "export": "npx expo export",
     "export:clear": "npx expo export --clear ",
-    "prebuild": "npx expo prebuild --clean",
+    "ios:preview": "eas build --platform ios --profile preview",
+    "ios:production": "eas build --platform ios --profile production",
+    "ios:submit": "eas submit --platform ios",
+    "android:preview": "eas build --platform android --profile preview",
+    "android:production": "eas build --platform android --profile production",
+    "android:submit": "eas submit --platform android",
     "start": "expo start --clear --tunnel",
     "start:prod": "expo start --no-dev --minify --clear --tunnel",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
     "lint": "expo lint"
   },
   "dependencies": {
