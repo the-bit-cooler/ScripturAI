@@ -1,4 +1,4 @@
-import { View, Button, StyleSheet, Alert, ScrollView, TouchableOpacity, Text, Appearance } from "react-native";
+import { View, Button, StyleSheet, Alert, ScrollView, TouchableOpacity, Appearance } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useAppTheme } from "@/hooks/use-app-theme-provider";

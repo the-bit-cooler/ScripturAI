@@ -1,6 +1,6 @@
 
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -22,11 +22,7 @@ export default function SimilarVerseScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchSimilarVerses();
-  }, []);
-
-  const fetchSimilarVerses = async () => {
+  const fetchSimilarVerses = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -40,7 +36,11 @@ export default function SimilarVerseScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [version, book, chapter, verse]);
+
+  useEffect(() => {
+    fetchSimilarVerses();
+  }, [fetchSimilarVerses]);
 
   const renderVerseItem = ({ item }: { item: Verse }) => (
     <ThemedView style={styles.verseItem}>

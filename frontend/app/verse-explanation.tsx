@@ -1,6 +1,6 @@
 
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
@@ -29,14 +29,9 @@ export default function VerseExplanationScreen() {
   // ✅ use theme defaults
   const headerBg = useThemeColor({}, 'cardBackground');
   const iconColor = useThemeColor({}, 'textSecondary');
-  const explanationBg = useThemeColor({}, 'verseBackground');
   const errorColor = useThemeColor({}, 'error');
 
-  useEffect(() => {
-    fetchSimilarVerses();
-  }, []);
-
-  const fetchSimilarVerses = async () => {
+  const fetchSimilarVerses = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -50,7 +45,11 @@ export default function VerseExplanationScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [version, book, chapter, verse, mode]);
+
+  useEffect(() => {
+    fetchSimilarVerses();
+  }, [fetchSimilarVerses]);
 
   return (
     <ParallaxScrollView

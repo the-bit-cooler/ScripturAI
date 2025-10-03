@@ -1,8 +1,8 @@
-import { useCallback } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Verse } from '@/types/verse';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const fetchChapter = useCallback(async (version: string, book: string, chapter: number) => {
+// Plain exported async function — do NOT use React hooks at module scope
+export async function fetchChapter(version: string, book: string, chapter: number): Promise<Verse[]> {
   const cacheKey = `${version}:${book}:${chapter}`;
   const cached = await AsyncStorage.getItem(cacheKey);
   if (cached) return JSON.parse(cached) as Verse[];
@@ -18,4 +18,4 @@ export const fetchChapter = useCallback(async (version: string, book: string, ch
     console.error(`Failed to fetch ${cacheKey}:`, err);
     return [];
   }
-}, []);
+}

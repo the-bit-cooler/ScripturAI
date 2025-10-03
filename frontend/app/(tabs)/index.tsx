@@ -5,8 +5,8 @@ import { StyleSheet, TouchableOpacity } from "react-native";
 import PagerView from "react-native-pager-view";
 
 import { fetchChapter } from "@/hooks/use-fetch-chapter";
-import { useVerseContextMenu } from "@/hooks/use-verse-context-menu";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useVerseContextMenu } from "@/hooks/use-verse-context-menu";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
@@ -40,6 +40,9 @@ const VerseItem = memo(({ verse, onContextMenu }: VerseItemProps) => {
     </TouchableOpacity>
   );
 });
+
+// Add a displayName for better devtools and to satisfy the linter rule
+VerseItem.displayName = 'VerseItem';
 
 type ChapterPageProps = {
   book: string;
