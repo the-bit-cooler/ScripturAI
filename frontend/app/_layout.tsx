@@ -2,11 +2,9 @@ import { Stack } from "expo-router";
 import { StatusBar } from 'expo-status-bar';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AppThemeProvider } from '@/hooks/use-app-theme-provider';
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   return (
     <ActionSheetProvider>
       <AppThemeProvider>
