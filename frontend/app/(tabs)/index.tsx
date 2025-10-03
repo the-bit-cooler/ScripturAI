@@ -4,7 +4,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import PagerView from "react-native-pager-view";
 
-import { fetchChapter } from "@/hooks/use-fetch-chapter";
+import { fetchChapter } from "@/utilities/fetch-chapter";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useVerseContextMenu } from "@/hooks/use-verse-context-menu";
 
