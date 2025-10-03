@@ -13,12 +13,6 @@
       "bundleIdentifier": "com.anonymous.ScripturAI"
     },
     "android": {
-      // "adaptiveIcon": {
-      //   "backgroundColor": "#E6F4FE",
-      //   "foregroundImage": "./assets/images/android-icon-foreground.png",
-      //   "backgroundImage": "./assets/images/android-icon-background.png",
-      //   "monochromeImage": "./assets/images/android-icon-monochrome.png"
-      // },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.ScripturAI"
@@ -45,6 +39,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f6fef65e-0a57-4bc0-8a32-a208b1222781"
+      }
     }
   }
 }
