@@ -32,17 +32,24 @@ export default function SettingsScreen() {
     );
   };
 
-// Compute effective theme for color lookup
-const effectiveTheme =
-  theme === "system"
-    ? Appearance.getColorScheme() === "dark"
-      ? "dark"
-      : "light"
-    : theme;
+  const showAbout = () => {
+    Alert.alert(
+      "About ScripturAI",
+      "App Version 1.0.0\n\Built with Expo + React Native\n© 2025 The Bit Cooler\n\nIn ❤️❤️ memory of Charlie Kirk"
+    );
+  };
 
-const backgroundColor = Colors[effectiveTheme].cardBackground;
-const textColor = Colors[effectiveTheme].text;
-const selectedColor = Colors[effectiveTheme].tint;
+  // Compute effective theme for color lookup
+  const effectiveTheme =
+    theme === "system"
+      ? Appearance.getColorScheme() === "dark"
+        ? "dark"
+        : "light"
+      : theme;
+
+  const backgroundColor = Colors[effectiveTheme].cardBackground;
+  const textColor = Colors[effectiveTheme].text;
+  const selectedColor = Colors[effectiveTheme].tint;
 
   return (
     <ThemedView style={[styles.container, { backgroundColor }]}>
@@ -68,6 +75,10 @@ const selectedColor = Colors[effectiveTheme].tint;
 
         <View style={{ marginTop: 40 }}>
           <Button title="Clear App Data" color="#FF3B30" onPress={clearStorage} />
+        </View>
+
+        <View style={{ marginTop: 40 }}>
+          <Button title="About" onPress={showAbout} />
         </View>
       </ScrollView>
     </ThemedView>
