@@ -17,7 +17,8 @@
     "android:submit": "eas submit --platform android",
     "start": "npx expo start --clear --tunnel",
     "start:prod": "npx expo start --no-dev --minify --clear --tunnel",
-    "lint": "npx expo lint"
+    "lint:check": "npx expo lint",
+    "lint:fix": "npx expo lint"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
