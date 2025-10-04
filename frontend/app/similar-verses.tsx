@@ -31,7 +31,7 @@ export default function SimilarVerseScreen() {
       
       const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/${verse}/similar?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
       const response = await fetch(url);
-      if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch similar verses for ${version}:${book}:${chapter}:${verse} at ${url}`);
+      if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch similar verses for ${version}:${book}:${chapter}:${verse}.`);
 
       setVerses(await response.json());
     } catch (err) {

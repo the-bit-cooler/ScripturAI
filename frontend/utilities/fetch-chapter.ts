@@ -8,7 +8,7 @@ export async function fetchChapter(version: string, book: string, chapter: numbe
   if (cached) return JSON.parse(cached) as Verse[];
 
   const response = await fetch(url);
-  if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch ${cacheKey} at ${url}`);
+  if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch ${cacheKey}.`);
 
   const verses: Verse[] = await response.json();
 
