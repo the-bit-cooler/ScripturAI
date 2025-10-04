@@ -1,18 +1,112 @@
-import { View, Button, StyleSheet, Alert, ScrollView, TouchableOpacity, Appearance } from "react-native";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Application from 'expo-application';
+import { useEffect, useState } from "react";
+import { Alert, Button, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { useAppTheme } from "@/hooks/use-app-theme-provider";
+import { AppTheme, useAppTheme } from "@/hooks/use-app-theme-provider";
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 import { Colors } from "@/constants/theme";
+import { UserPreferences } from "@/constants/user-preferences";
 
-import { ThemedView } from "@/components/themed-view";
 import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { HorizontalThemedSeparator } from "@/components/ui/themed-separator";
 
-const themeOptions = ["light", "dark", "sepia", "system"] as const;
+type AppearanceSectionProps = {
+  appTheme: AppTheme;
+  setAppTheme: (theme: AppTheme) => void
+  color: string;
+  selectedColor: string;
+}
+
+const AppearanceSection = ({ appTheme, setAppTheme, color, selectedColor }: AppearanceSectionProps) => {
+  const themeOptions = ["light", "dark", "sepia", "system"] as const;
+
+  return (
+    <>
+      <ThemedText type="subtitle" style={[styles.header, { color }]}>
+        Appearance
+      </ThemedText>
+      {themeOptions.map((option) => {
+        const isSelected = appTheme === option;
+        return (
+          <TouchableOpacity
+            key={option}
+            style={[styles.optionButton, { borderColor: isSelected ? selectedColor : "transparent" }]}
+            onPress={() => setAppTheme(option)}
+          >
+            <ThemedText style={{ color: isSelected ? selectedColor : color }}>
+              {option.charAt(0).toUpperCase() + option.slice(1)}
+            </ThemedText>
+          </TouchableOpacity>
+        );
+      })}
+    </>
+  );
+};
+
+type ModeSectionProps = {
+  color: string;
+  selectedColor: string;
+}
+
+const ModeSection = ({ color, selectedColor }: ModeSectionProps) => {
+  const [mode, setMode] = useState('simple');
+  const modeOptions = ["simple", "deep"] as const;
+
+  useEffect(() => {
+    const loadPreference = async () => {
+      try {
+        const storedMode = await AsyncStorage.getItem(UserPreferences.ai_mode);
+        if (storedMode) {
+          setMode(storedMode);
+        }
+      } catch (err) {
+        console.error('Error loading AI mode preference:', err);
+      }
+    };
+
+    loadPreference();
+  }, [mode]);
+
+  return (
+    <View style={{ marginTop: 10 }}>
+      <ThemedText type="subtitle" style={[styles.header, { color }]}>
+        AI Mode
+      </ThemedText>
+      {modeOptions.map((option) => {
+        const isSelected = mode === option;
+        return (
+          <TouchableOpacity
+            key={option}
+            style={[styles.optionButton, { borderColor: isSelected ? selectedColor : "transparent" }]}
+            onPress={async () => {
+              try {
+                await AsyncStorage.setItem(UserPreferences.ai_mode, option);
+                setMode(option);
+              } catch (err) {
+                Alert.alert("Error", "Something went wrong! Pleas try again later.");
+                console.error('Error storing AI mode preference: ', err);
+              }
+            }}
+          >
+            <ThemedText style={{ color: isSelected ? selectedColor : color }}>
+              {option.charAt(0).toUpperCase() + option.slice(1)}
+            </ThemedText>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+};
 
 export default function SettingsScreen() {
   const { theme, setTheme } = useAppTheme();
+  const textColor: string = useThemeColor({}, "text");
+  const tintColor: string = useThemeColor({}, "tint");
+
 
   const clearStorage = async () => {
     Alert.alert(
@@ -24,9 +118,14 @@ export default function SettingsScreen() {
           text: "Clear",
           style: "destructive",
           onPress: async () => {
-            await AsyncStorage.clear();
-            Alert.alert("Cleared", "All app data has been cleared.");
-            setTheme("system"); // reset theme to system default
+            try {
+              await AsyncStorage.clear();
+              Alert.alert("Cleared", "All app data has been cleared.");
+              setTheme("system"); // reset theme to system default
+            } catch (err) {
+              Alert.alert("Error", "Something went wrong! Pleas try again later.");
+              console.error('Error clearing app data: ', err);
+            }
           },
         },
       ]
@@ -40,44 +139,25 @@ export default function SettingsScreen() {
     );
   };
 
-  // Compute effective theme for color lookup
-  const effectiveTheme =
-    theme === "system"
-      ? Appearance.getColorScheme() === "dark"
-        ? "dark"
-        : "light"
-      : theme;
-
-  const textColor = Colors[effectiveTheme].text;
-  const selectedColor = Colors[effectiveTheme].tint;
-
   return (
     <ThemedView style={[styles.container]}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <ThemedText type="subtitle" style={[styles.header, { color: textColor }]}>
-          Appearance
-        </ThemedText>
-
-        {themeOptions.map((option) => {
-          const isSelected = theme === option;
-          return (
-            <TouchableOpacity
-              key={option}
-              style={[styles.optionButton, { borderColor: isSelected ? selectedColor : "transparent" }]}
-              onPress={() => setTheme(option)}
-            >
-              <ThemedText style={{ color: isSelected ? selectedColor : textColor }}>
-                {option.charAt(0).toUpperCase() + option.slice(1)}
-              </ThemedText>
-            </TouchableOpacity>
-          );
-        })}
-
-        <View style={{ marginTop: 40 }}>
+        <AppearanceSection
+          appTheme={theme}
+          setAppTheme={setTheme}
+          color={textColor}
+          selectedColor={tintColor}
+        />
+        <HorizontalThemedSeparator />
+        <ModeSection
+          color={textColor}
+          selectedColor={tintColor}
+        />
+        <HorizontalThemedSeparator />
+        <View style={{ marginTop: 10 }}>
           <Button title="Clear App Data" color={Colors.error.text} onPress={clearStorage} />
         </View>
-
-        <View style={{ marginTop: 40 }}>
+        <View style={{ marginTop: 20 }}>
           <Button title="About" onPress={showAbout} />
         </View>
       </ScrollView>
