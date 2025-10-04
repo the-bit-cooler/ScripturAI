@@ -23,7 +23,7 @@ type SummarizeChapterParams = {
 export default function SummarizeChapterScreen() {
   const { version, book, chapter } = useLocalSearchParams<SummarizeChapterParams>();
   const [summary, setSummary] = useState<string>('');
-  const [mode, setMode] = useState<string>('simple');
+  const [mode, setMode] = useState<string | null>(null); // ✅ null means "not loaded yet"
   const [loading, setLoading] = useState(true);
 
   // ✅ use theme defaults
@@ -34,18 +34,18 @@ export default function SummarizeChapterScreen() {
     const loadModePreference = async () => {
       try {
         const storedMode = await AsyncStorage.getItem(UserPreferences.ai_mode);
-        if (storedMode) {
-          setMode(storedMode);
-        }
+        setMode(storedMode || 'simple'); // set default if nothing stored
       } catch (err) {
         console.error('Error loading AI mode preference:', err);
+        setMode('simple');
       }
     };
     loadModePreference();
   });
 
 
-  const fetchSimilarVerses = useCallback(async () => {
+  const fetchSimilarVerses = useCallback(async () => 
+    {if (!mode) return; // wait until mode is loaded
     try {
       setLoading(true);
 
