@@ -5,7 +5,8 @@
   "scripts": {
     "env-local:generate": "bash scripts/generate-env.sh",
     "env-remote:list": "eas env:list --include-sensitive",
-    "check": "npx expo install --check",
+    "install:check": "npx expo install --check",
+    "install:fix": "npx expo install --fix",
     "export": "npx expo export",
     "export:clear": "npx expo export --clear",
     "ios:preview": "eas build --platform ios --profile preview",
