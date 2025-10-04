@@ -1,8 +1,10 @@
 import { FlashList } from "@shopify/flash-list";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { memo, useEffect, useRef, useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import PagerView from "react-native-pager-view";
+import { PlatformPressable } from '@react-navigation/elements';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { fetchChapter } from "@/utilities/fetch-chapter";
 import { useThemeColor } from "@/hooks/use-theme-color";
@@ -10,6 +12,7 @@ import { useVerseContextMenu } from "@/hooks/use-verse-context-menu";
 
 import { ThemedText } from "@/components/themed-text";
 import { CenteredActivityIndicator } from "@/components/ui/centered-activity-indicator";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 
 import { Verse } from "@/types/verse";
 import { Colors } from "@/constants/theme";
@@ -45,13 +48,14 @@ const VerseItem = memo(({ verse, onContextMenu }: VerseItemProps) => {
 VerseItem.displayName = 'VerseItem';
 
 type ChapterPageProps = {
-  book: string;
+  bibleVersion: string;
+  bibleBook: string;
   chapterNumber: number;
   shouldLoad: boolean;
   onContextMenu: (verse: Verse) => void;
 }
 
-const ChapterPage = ({ book, chapterNumber, shouldLoad, onContextMenu }: ChapterPageProps) => {
+const ChapterPage = ({ bibleVersion, bibleBook, chapterNumber, shouldLoad, onContextMenu }: ChapterPageProps) => {
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const hasFetched = useRef(false);
@@ -61,7 +65,7 @@ const ChapterPage = ({ book, chapterNumber, shouldLoad, onContextMenu }: Chapter
       const loadChapter = async () => {
         try {
           setLoading(true);
-          const chapterData = await fetchChapter("KJV", book, chapterNumber);
+          const chapterData = await fetchChapter(bibleVersion, bibleBook, chapterNumber);
           setVerses(chapterData);
           hasFetched.current = true;
         } catch (error) {
@@ -74,7 +78,7 @@ const ChapterPage = ({ book, chapterNumber, shouldLoad, onContextMenu }: Chapter
 
       loadChapter();
     }
-  }, [book, chapterNumber, shouldLoad]);
+  }, [bibleVersion, bibleBook, chapterNumber, shouldLoad]);
 
   if (!shouldLoad || loading) {
     return (
@@ -108,11 +112,13 @@ const ChapterPage = ({ book, chapterNumber, shouldLoad, onContextMenu }: Chapter
 };
 
 export default function BookReader() {
+  const router = useRouter();
   let { book } = useLocalSearchParams<{ book: string }>();
   if (!book) {
     book = "John"; // Default book if none provided
   }
 
+  const [version, setVersion] = useState('KJV');
   const [chapter, setChapter] = useState(1);
   const [title, setTitle] = useState(`${book} 1`);
   const [loadedChapters, setLoadedChapters] = useState<number[]>([1]); // Start with chapter 1
@@ -121,6 +127,20 @@ export default function BookReader() {
 
   const totalChapters = (bookChapterCounts as Record<string, number>)[book];
   const chapterNumbers = Array.from({ length: totalChapters }, (_, i) => i + 1);
+
+  useEffect(() => {
+    const loadModePreference = async () => {
+      try {
+        const storedVersion = await AsyncStorage.getItem('ai-mode');
+        if (storedVersion) {
+          setVersion(storedVersion);
+        }
+      } catch (err) {
+        console.error('Error loading AI mode preference:', err);
+      }
+    };
+    loadModePreference();
+  });
 
   // Preload adjacent chapters
   const preloadAdjacentChapters = (currentChapter: number) => {
@@ -140,6 +160,13 @@ export default function BookReader() {
       <Stack.Screen
         options={{
           title: title,
+          headerRight: ({ tintColor }) => 
+            <PlatformPressable
+              onPress={() => router.push({pathname: '/summarize', params: { version, book, chapter } })}
+              style={{ marginRight: 20 }}
+            >
+              <IconSymbol size={28} name="list.bullet.rectangle" color={tintColor!} />
+            </PlatformPressable>,
         }}
       />
       <PagerView
@@ -162,8 +189,9 @@ export default function BookReader() {
         {chapterNumbers.map((ch) => (
           <ChapterPage
             key={ch}
+            bibleVersion={version}
+            bibleBook={book}
             chapterNumber={ch}
-            book={book}
             shouldLoad={loadedChapters.includes(ch)}
             onContextMenu={onContextMenu}
           />

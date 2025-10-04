@@ -23,6 +23,7 @@ const MAPPING = {
   'heart.fill': 'favorite',
   'magnifyingglass': 'search',
   'lightbulb.fill': 'lightbulb',
+  'list.bullet.rectangle': 'summarize',
 } as IconMapping;
 
 /**
