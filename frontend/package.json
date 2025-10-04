@@ -14,9 +14,9 @@
     "android:preview": "eas build --platform android --profile preview",
     "android:production": "eas build --platform android --profile production",
     "android:submit": "eas submit --platform android",
-    "start": "expo start --clear --tunnel",
-    "start:prod": "expo start --no-dev --minify --clear --tunnel",
-    "lint": "expo lint"
+    "start": "npx expo start --clear --tunnel",
+    "start:prod": "npx expo start --no-dev --minify --clear --tunnel",
+    "lint": "npx expo lint"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
