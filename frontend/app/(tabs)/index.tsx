@@ -16,6 +16,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 
 import { Verse } from "@/types/verse";
 import { Colors } from "@/constants/theme";
+import { UserPreferences } from "@/constants/user-preferences";
 
 import bookChapterCounts from "@/assets/data/book-chapter-counts.json";
 
@@ -130,7 +131,7 @@ export default function BookReader() {
   useEffect(() => {
     const loadModePreference = async () => {
       try {
-        const storedVersion = await AsyncStorage.getItem('ai-mode');
+        const storedVersion = await AsyncStorage.getItem(UserPreferences.bible_version);
         if (storedVersion) {
           setVersion(storedVersion);
         }

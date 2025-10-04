@@ -5,6 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { LightNavTheme, DarkNavTheme, SepiaNavTheme } from "@/constants/navigation-theme";
 import { ThemeName } from "@/constants/theme";
+import { UserPreferences } from "@/constants/user-preferences";
 
 export type AppTheme = ThemeName | "system";
 
@@ -20,14 +21,14 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
 
   useEffect(() => {
     (async () => {
-      const stored = await AsyncStorage.getItem("app-theme");
+      const stored = await AsyncStorage.getItem(UserPreferences.app_theme);
       if (stored) setThemeState(stored as AppTheme);
     })();
   }, []);
 
   const setTheme = async (newTheme: AppTheme) => {
     setThemeState(newTheme);
-    await AsyncStorage.setItem("app-theme", newTheme);
+    await AsyncStorage.setItem(UserPreferences.app_theme, newTheme);
   };
 
   // Compute effective theme for NavigationProvider

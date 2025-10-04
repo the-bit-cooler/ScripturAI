@@ -12,6 +12,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 import { Colors } from "@/constants/theme";
+import { UserPreferences } from "@/constants/user-preferences";
 
 type SummarizeChapterParams = {
   version: string;
@@ -32,7 +33,7 @@ export default function SummarizeChapterScreen() {
   useEffect(() => {
     const loadModePreference = async () => {
       try {
-        const storedMode = await AsyncStorage.getItem('ai-mode');
+        const storedMode = await AsyncStorage.getItem(UserPreferences.ai_mode);
         if (storedMode) {
           setMode(storedMode);
         }
