@@ -3,8 +3,6 @@ import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 
-import { useThemeColor } from "@/hooks/use-theme-color";
-
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CenteredActivityIndicator } from '@/components/ui/centered-activity-indicator';
@@ -23,7 +21,6 @@ export default function SimilarVerseScreen() {
   const { version, book, chapter, verse } = useLocalSearchParams<SimilarVerseParams>();
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
-  const backgroundColor = useThemeColor({}, "verseBackground");
 
   const fetchSimilarVerses = useCallback(async () => {
     try {
@@ -57,7 +54,7 @@ export default function SimilarVerseScreen() {
   );
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor }]}>
+    <ThemedView style={[styles.container]}>
       {loading ? (
         <CenteredActivityIndicator size="large" />
       ) : (verses?.length ?? 0) === 0 ? (

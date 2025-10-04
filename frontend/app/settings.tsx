@@ -48,12 +48,11 @@ export default function SettingsScreen() {
         : "light"
       : theme;
 
-  const backgroundColor = Colors[effectiveTheme].cardBackground;
   const textColor = Colors[effectiveTheme].text;
   const selectedColor = Colors[effectiveTheme].tint;
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor }]}>
+    <ThemedView style={[styles.container]}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <ThemedText type="subtitle" style={[styles.header, { color: textColor }]}>
           Appearance

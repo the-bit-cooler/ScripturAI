@@ -8,7 +8,6 @@ export const Colors: Record<ThemeName, any> = {
   light: {
     text: "#222222",              // Main scripture text
     background: "#FAF9F6",        // Page background
-    verseBackground: "#FAF9F6",   // Individual verse background
     cardBackground: "#F5F0E6",    // Headers, tab bars, panels
     tint: "#3B82F6",              // Action colors, links, highlights
     icon: "#687076",              // Icons
@@ -18,8 +17,7 @@ export const Colors: Record<ThemeName, any> = {
   },
   dark: {
     text: "#ECEDEE",              // Main scripture text
-    background: "#151718",        // Page background
-    verseBackground: "#1E1E1E",   // Individual verse background
+    background: "#1E1E1E",        // Page background
     cardBackground: "#212121",    // Headers, tab bars, panels
     tint: "#60A5FA",              // Action colors, links, highlights
     icon: "#9BA1A6",              // Icons
@@ -29,8 +27,7 @@ export const Colors: Record<ThemeName, any> = {
   },
   sepia: {
     text: "#3E2F1C",              // Main scripture text
-    background: "#F4ECD8",        // Page background
-    verseBackground: "#EFE2C6",   // Individual verse background
+    background: "#EFE2C6",        // Page background
     cardBackground: "#E8D9B5",    // Headers, tab bars, panels
     tint: "#8B5E3C",              // Action colors, links, highlights
     icon: "#8B5E3C",              // Icons

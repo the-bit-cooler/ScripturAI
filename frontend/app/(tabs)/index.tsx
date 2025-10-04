@@ -123,7 +123,6 @@ export default function BookReader() {
   const [title, setTitle] = useState(`${book} 1`);
   const [loadedChapters, setLoadedChapters] = useState<number[]>([1]); // Start with chapter 1
   const { onContextMenu } = useVerseContextMenu();
-  const backgroundColor = useThemeColor({}, "verseBackground");
 
   const totalChapters = (bookChapterCounts as Record<string, number>)[book];
   const chapterNumbers = Array.from({ length: totalChapters }, (_, i) => i + 1);
@@ -170,7 +169,7 @@ export default function BookReader() {
         }}
       />
       <PagerView
-        style={{ flex: 1, backgroundColor }}
+        style={{ flex: 1 }}
         initialPage={chapter - 1} // Start at the selected chapter
         offscreenPageLimit={1} // Render current + 1 adjacent page each side
         onPageScroll={(e) => {
