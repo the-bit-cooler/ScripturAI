@@ -1,15 +1,16 @@
 
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { CenteredActivityIndicator } from '@/components/ui/centered-activity-indicator';
 import { IconSymbol, IconSymbolName } from '@/components/ui/icon-symbol';
 
 import { useThemeColor } from '@/hooks/use-theme-color';
+
+import { Colors } from "@/constants/theme";
 
 type VerseExplanationParams = {
   version: string;
@@ -24,23 +25,21 @@ export default function VerseExplanationScreen() {
   const { version, book, chapter, verse, mode, icon } = useLocalSearchParams<VerseExplanationParams>();
   const [explanation, setExplanation] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // ✅ use theme defaults
   const headerBg = useThemeColor({}, 'cardBackground');
   const iconColor = useThemeColor({}, 'textSecondary');
-  const errorColor = useThemeColor({}, 'error');
 
   const fetchSimilarVerses = useCallback(async () => {
     try {
       setLoading(true);
 
-      const response = await fetch(`${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/${verse}/explain/${mode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`);
-      if (!response.ok) throw new Error(`API error: ${response.status}`);
+      const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/${verse}/explain/${mode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch any insight for ${version}:${book}:${chapter}:${verse} at ${url}`);
 
       setExplanation(await response.text());
     } catch (err) {
-      setError('Error fetching explanation. Please try again.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -62,32 +61,29 @@ export default function VerseExplanationScreen() {
           style={styles.headerImage}
         />
       }>
-
-    <ThemedView style={styles.container}>
-      {loading ? (
-        <CenteredActivityIndicator size="large" />
-      ) : error ? (
-        <ThemedText type="default" style={[styles.errorText, { color: errorColor }]}>
-          {error}
-        </ThemedText>
-      ) : explanation ? (
-        <ThemedView style={styles.explanationTheme}>
-          <ThemedText style={styles.explanationText}>
-            {explanation}
-          </ThemedText>
-        </ThemedView>
-      ) : (
-        <ThemedText type="default">No explanation for now. Please try again later.</ThemedText>
-      )}
-    </ThemedView>
+      <View style={styles.container}>
+        {loading ? (
+          <CenteredActivityIndicator size="large" />
+        ) : explanation ? (
+          <View style={styles.explanationTheme}>
+            <ThemedText style={styles.explanationText}>
+              {explanation}
+            </ThemedText>
+          </View>
+        ) : (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ThemedText style={{ color: Colors.error.text, fontWeight: "bold" }}>No insight at the moment.</ThemedText>
+            <ThemedText style={{ color: Colors.error.text, fontWeight: "bold" }}>Please try again later.</ThemedText>
+          </View>
+        )}
+      </View>
     </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 10,
+    flex: 1
   },
   headerImage: {
     color: '#808080',
@@ -100,9 +96,5 @@ const styles = StyleSheet.create({
   },
   explanationText: {
     fontSize: 16,
-  },
-  errorText: {
-    color: 'red',
-    textAlign: 'center',
   },
 });

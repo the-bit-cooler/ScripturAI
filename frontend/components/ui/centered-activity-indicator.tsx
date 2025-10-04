@@ -1,6 +1,4 @@
-import { ActivityIndicator, ColorValue, StyleSheet } from 'react-native';
-
-import { ThemedView } from '@/components/themed-view';
+import { ActivityIndicator, ColorValue, StyleSheet, View } from 'react-native';
 
 import { useThemeColor } from '@/hooks/use-theme-color';
 
@@ -12,9 +10,9 @@ type CenteredActivityIndicatorProps = {
 export function CenteredActivityIndicator({ size, color }: CenteredActivityIndicatorProps) {  
   const activityColor = useThemeColor({}, 'tint');
   return (
-    <ThemedView style={styles.activityIndicatorContainer}>
+    <View style={styles.activityIndicatorContainer}>
       <ActivityIndicator size={size} color={color ?? activityColor} />
-    </ThemedView>
+    </View>
   );
 }
 

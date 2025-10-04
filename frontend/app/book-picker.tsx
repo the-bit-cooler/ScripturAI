@@ -2,6 +2,8 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 
+import { useThemeColor } from "@/hooks/use-theme-color";
+
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
@@ -12,13 +14,15 @@ export default function BookPickerScreen() {
   const router = useRouter();
   const { colors } = useTheme();
 
+  const backgroundColor = useThemeColor({}, "cardBackground");
+
   const navigateToReader = (book: string) => {
     // Dismiss modal and navigate to reader tab with book param
     router.replace({ pathname: '/(tabs)', params: { book } });
   };
 
   return (
-    <ThemedView style={styles.container}>
+     <ThemedView style={[styles.container, { backgroundColor }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.columnsContainer}>
           {/* Old Testament Column */}

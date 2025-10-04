@@ -1,7 +1,7 @@
 import { FlashList } from "@shopify/flash-list";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { memo, useEffect, useRef, useState } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import PagerView from "react-native-pager-view";
 
 import { fetchChapter } from "@/utilities/fetch-chapter";
@@ -9,7 +9,6 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 import { useVerseContextMenu } from "@/hooks/use-verse-context-menu";
 
 import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
 import { CenteredActivityIndicator } from "@/components/ui/centered-activity-indicator";
 
 import { Verse } from "@/types/verse";
@@ -56,7 +55,6 @@ const ChapterPage = ({ book, chapterNumber, shouldLoad, onContextMenu }: Chapter
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const hasFetched = useRef(false);
-  const backgroundColor = useThemeColor({}, "verseBackground");
 
   useEffect(() => {
     if (shouldLoad && !hasFetched.current) {
@@ -84,16 +82,17 @@ const ChapterPage = ({ book, chapterNumber, shouldLoad, onContextMenu }: Chapter
     );
   }
 
-  if ((verses?.length ?? 0) === 0) {
+  if ( (verses?.length ?? 0) === 0) {
     return (
-      <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ThemedText style={{ color: Colors.error.text, fontWeight: "bold" }}>Chapter failed to load. Please try again later.</ThemedText>
-      </ThemedView>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ThemedText style={{ color: Colors.error.text, fontWeight: "bold" }}>Chapter failed to load.</ThemedText>
+        <ThemedText style={{ color: Colors.error.text, fontWeight: "bold" }}>Please try again later.</ThemedText>
+      </View>
     );
   }
 
   return (
-    <ThemedView style={[styles.verseContainer, { backgroundColor }]}>
+    <View style={[styles.verseContainer]}>
       <FlashList
         data={verses}
         keyExtractor={(verse) => verse.verse.toString()}
@@ -104,7 +103,7 @@ const ChapterPage = ({ book, chapterNumber, shouldLoad, onContextMenu }: Chapter
           />
         )}
       />
-    </ThemedView>
+    </View>
   );
 };
 
@@ -118,6 +117,7 @@ export default function BookReader() {
   const [title, setTitle] = useState(`${book} 1`);
   const [loadedChapters, setLoadedChapters] = useState<number[]>([1]); // Start with chapter 1
   const { onContextMenu } = useVerseContextMenu();
+  const backgroundColor = useThemeColor({}, "verseBackground");
 
   const totalChapters = (bookChapterCounts as Record<string, number>)[book];
   const chapterNumbers = Array.from({ length: totalChapters }, (_, i) => i + 1);
@@ -143,7 +143,7 @@ export default function BookReader() {
         }}
       />
       <PagerView
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor }}
         initialPage={chapter - 1} // Start at the selected chapter
         offscreenPageLimit={1} // Render current + 1 adjacent page each side
         onPageScroll={(e) => {
