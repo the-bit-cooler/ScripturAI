@@ -1,18 +1,17 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
-import { useTheme } from '@react-navigation/native';
 
 import { useThemeColor } from "@/hooks/use-theme-color";
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { VerticalThemedSeparator } from '@/components/ui/themed-separator';
 
 import newTestamentBooks from '@/assets/data/new-testament.json';
 import oldTestamentBooks from '@/assets/data/old-testament.json';
 
 export default function BookPickerScreen() {
   const router = useRouter();
-  const { colors } = useTheme();
 
   const backgroundColor = useThemeColor({}, "cardBackground");
 
@@ -22,7 +21,7 @@ export default function BookPickerScreen() {
   };
 
   return (
-     <ThemedView style={[styles.container, { backgroundColor }]}>
+    <ThemedView style={[styles.container, { backgroundColor }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.columnsContainer}>
           {/* Old Testament Column */}
@@ -40,9 +39,8 @@ export default function BookPickerScreen() {
               </TouchableOpacity>
             ))}
           </View>
-
-          {/* Separator */}
-          <View style={[styles.separator, { backgroundColor: colors.border }]} />
+          
+          <VerticalThemedSeparator />
 
           {/* New Testament Column */}
           <View style={styles.column}>
