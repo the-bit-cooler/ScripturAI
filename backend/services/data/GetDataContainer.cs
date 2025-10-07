@@ -1,0 +1,13 @@
+using Microsoft.Azure.Cosmos;
+
+namespace ScripturAI.Services;
+
+public partial class DataService
+{
+  internal Container GetDataContainer()
+  {
+    return client
+      .GetDatabase(Environment.GetEnvironmentVariable("COSMOS_DATABASE_NAME"))
+      .GetContainer(Environment.GetEnvironmentVariable("COSMOS_DATA_CONTAINER_NAME"));
+  }
+}
