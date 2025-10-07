@@ -2,6 +2,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -9,6 +10,8 @@ import { CenteredActivityIndicator } from '@/components/ui/centered-activity-ind
 
 import { Verse } from "@/types/verse";
 import { Colors } from "@/constants/theme";
+import { UserPreferences } from "@/constants/user-preferences";
+import { AiModes } from '@/constants/ai-modes';
 
 type SimilarVerseParams = {
   version: string;
@@ -17,16 +20,31 @@ type SimilarVerseParams = {
   verse: string;
 };
 
-export default function SimilarVerseScreen() {
+export default function SimilarBibleVersesScreen() {
   const { version, book, chapter, verse } = useLocalSearchParams<SimilarVerseParams>();
   const [verses, setVerses] = useState<Verse[]>([]);
+  const [mode, setMode] = useState<string | null>(null); // ✅ null means "not loaded yet"
   const [loading, setLoading] = useState(true);
 
-  const fetchSimilarVerses = useCallback(async () => {
+  useEffect(() => {
+    const loadModePreference = async () => {
+      try {
+        const storedMode = await AsyncStorage.getItem(UserPreferences.ai_mode);
+        setMode(storedMode || AiModes.devotional); // set default if nothing stored
+      } catch (err) {
+        console.error('Error loading AI mode preference:', err);
+        setMode(AiModes.devotional);
+      }
+    };
+    loadModePreference();
+  });
+
+  const fetchSimilarBibleVerses = useCallback(async () => {
+    if (!mode) return; // wait until mode is loaded
     try {
       setLoading(true);
       
-      const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/${verse}/similar?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
+      const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/${verse}/similar/${mode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch similar verses for ${version}:${book}:${chapter}:${verse}.`);
 
@@ -36,11 +54,11 @@ export default function SimilarVerseScreen() {
     } finally {
       setLoading(false);
     }
-  }, [version, book, chapter, verse]);
+  }, [version, book, chapter, verse, mode]);
 
   useEffect(() => {
-    fetchSimilarVerses();
-  }, [fetchSimilarVerses]);
+    fetchSimilarBibleVerses();
+  }, [fetchSimilarBibleVerses]);
 
   const renderVerseItem = ({ item }: { item: Verse }) => (
     <View style={styles.verseItem}>

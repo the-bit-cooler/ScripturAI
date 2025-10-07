@@ -3,6 +3,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Markdown from 'react-native-markdown-display';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
@@ -13,15 +14,16 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 
 import { Colors } from "@/constants/theme";
 import { UserPreferences } from "@/constants/user-preferences";
+import { AiModes } from '@/constants/ai-modes';
 
-type SummarizeChapterParams = {
+type BibleSummaryChapterScreenParams = {
   version: string;
   book: string;
   chapter: string;
 };
 
-export default function SummarizeChapterScreen() {
-  const { version, book, chapter } = useLocalSearchParams<SummarizeChapterParams>();
+export default function BibleSummaryChapterScreen() {
+  const { version, book, chapter } = useLocalSearchParams<BibleSummaryChapterScreenParams>();
   const [summary, setSummary] = useState<string>('');
   const [mode, setMode] = useState<string | null>(null); // ✅ null means "not loaded yet"
   const [loading, setLoading] = useState(true);
@@ -29,23 +31,25 @@ export default function SummarizeChapterScreen() {
   // ✅ use theme defaults
   const headerBackgroundColor = useThemeColor({}, 'cardBackground');
   const iconColor = useThemeColor({}, 'textSecondary');
+  const markdownBackgroundColor = useThemeColor({}, 'cardBackground');
+  const markdownTextColor = useThemeColor({}, 'text');
 
   useEffect(() => {
     const loadModePreference = async () => {
       try {
         const storedMode = await AsyncStorage.getItem(UserPreferences.ai_mode);
-        setMode(storedMode || 'simple'); // set default if nothing stored
+        setMode(storedMode || AiModes.devotional); // set default if nothing stored
       } catch (err) {
         console.error('Error loading AI mode preference:', err);
-        setMode('simple');
+        setMode(AiModes.devotional);
       }
     };
     loadModePreference();
   });
 
 
-  const fetchSimilarVerses = useCallback(async () => 
-    {if (!mode) return; // wait until mode is loaded
+  const fetchBibleChapterSummary = useCallback(async () => {
+    if (!mode) return; // wait until mode is loaded
     try {
       setLoading(true);
 
@@ -62,8 +66,8 @@ export default function SummarizeChapterScreen() {
   }, [version, book, chapter, mode]);
 
   useEffect(() => {
-    fetchSimilarVerses();
-  }, [fetchSimilarVerses]);
+    fetchBibleChapterSummary();
+  }, [fetchBibleChapterSummary]);
 
   return (
     <ParallaxScrollView
@@ -80,11 +84,39 @@ export default function SummarizeChapterScreen() {
         {loading ? (
           <CenteredActivityIndicator size="large" />
         ) : summary ? (
-          <View style={[styles.summaryTheme]}>
-            <ThemedText style={styles.summaryText}>
-              {summary}
-            </ThemedText>
-          </View>
+          <Markdown style={{
+            body: { color: markdownTextColor },
+            heading1: { color: markdownTextColor },
+            heading2: { color: markdownTextColor },
+            heading3: { color: markdownTextColor },
+            blockquote: {
+              backgroundColor: markdownBackgroundColor,
+              color: markdownTextColor,
+              borderLeftWidth: 4,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+            },
+            code_block: {
+              backgroundColor: markdownBackgroundColor,
+              color: markdownTextColor,
+              borderRadius: 4,
+              paddingHorizontal: 4,
+            },
+            code_inline: {
+              backgroundColor: markdownBackgroundColor,
+              color: markdownTextColor,
+              borderRadius: 4,
+              paddingHorizontal: 4,
+            },
+            fence: {
+              backgroundColor: markdownBackgroundColor,
+              color: markdownTextColor,
+              padding: 8,
+              borderRadius: 8,
+            },
+          }}>
+            {summary}
+          </Markdown>
         ) : (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <ThemedText style={{ color: Colors.error.text, fontWeight: "bold" }}>No summary at the moment.</ThemedText>

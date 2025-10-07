@@ -19,7 +19,7 @@ export default function TabLayout() {
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault(); // Prevent navigating to index
-            navigation.navigate('book-picker'); // Open the modal screen
+            navigation.navigate('bible-book-picker'); // Open the modal screen
           },
         })}
       />

@@ -9,6 +9,7 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 
 import { Colors } from "@/constants/theme";
 import { UserPreferences } from "@/constants/user-preferences";
+import { AiModes, AiModeValues } from "@/constants/ai-modes";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
@@ -53,8 +54,7 @@ type ModeSectionProps = {
 }
 
 const ModeSection = ({ color, selectedColor }: ModeSectionProps) => {
-  const [mode, setMode] = useState('simple');
-  const modeOptions = ["simple", "deep"] as const;
+  const [mode, setMode] = useState(AiModes.devotional);
 
   useEffect(() => {
     const loadPreference = async () => {
@@ -76,7 +76,7 @@ const ModeSection = ({ color, selectedColor }: ModeSectionProps) => {
       <ThemedText type="subtitle" style={[styles.header, { color }]}>
         AI Mode
       </ThemedText>
-      {modeOptions.map((option) => {
+      {AiModeValues.map((option) => {
         const isSelected = mode === option;
         return (
           <TouchableOpacity

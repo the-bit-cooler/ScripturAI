@@ -1,8 +1,8 @@
-import { router } from "expo-router";
-import { useCallback } from "react";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as Clipboard from "expo-clipboard";
-import { Share, Platform, Alert } from "react-native";
+import { router } from "expo-router";
+import { useCallback } from "react";
+import { Alert, Platform, Share } from "react-native";
 
 import { Verse } from "@/types/verse";
 
@@ -11,7 +11,7 @@ export function useVerseContextMenu() {
 
   const onContextMenu = useCallback((verse: Verse) => {
     // Build options dynamically
-    const options = ["Similar Verses", "Simple Insight", "Deep Insight"];
+    const options = ["Similar Verses", "Explain Verse"];
     if (Platform.OS === "android") options.push("Copy");
     options.push("Share");
 
@@ -21,20 +21,14 @@ export function useVerseContextMenu() {
         switch (options[selectedIndex!]) {
           case "Similar Verses":
             router.push({
-              pathname: "/similar-verses",
+              pathname: "/similar-bible-verses",
               params: { version: verse.version, book: verse.book, chapter: verse.chapter, verse: verse.verse },
             });
             break;
-          case "Simple Insight":
+          case "Explain Verse":
             router.push({
-              pathname: "/verse-explanation",
-              params: { version: verse.version, book: verse.book, chapter: verse.chapter, verse: verse.verse, mode: "simple", icon: "lightbulb.fill" },
-            });
-            break;
-          case "Deep Insight":
-            router.push({
-              pathname: "/verse-explanation",
-              params: { version: verse.version, book: verse.book, chapter: verse.chapter, verse: verse.verse, mode: "deep", icon: "book.fill" },
+              pathname: "/bible-verse-explanation",
+              params: { version: verse.version, book: verse.book, chapter: verse.chapter, verse: verse.verse },
             });
             break;
           case "Copy":

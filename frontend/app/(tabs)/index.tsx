@@ -1,22 +1,22 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { PlatformPressable } from '@react-navigation/elements';
 import { FlashList } from "@shopify/flash-list";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { memo, useEffect, useRef, useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import PagerView from "react-native-pager-view";
-import { PlatformPressable } from '@react-navigation/elements';
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { fetchChapter } from "@/utilities/fetch-chapter";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useVerseContextMenu } from "@/hooks/use-verse-context-menu";
+import { fetchChapter } from "@/utilities/fetch-chapter";
 
 import { ThemedText } from "@/components/themed-text";
 import { CenteredActivityIndicator } from "@/components/ui/centered-activity-indicator";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 
-import { Verse } from "@/types/verse";
 import { Colors } from "@/constants/theme";
 import { UserPreferences } from "@/constants/user-preferences";
+import { Verse } from "@/types/verse";
 
 import bookChapterCounts from "@/assets/data/book-chapter-counts.json";
 
@@ -162,7 +162,7 @@ export default function BookReader() {
           title: title,
           headerRight: ({ tintColor }) => 
             <PlatformPressable
-              onPress={() => router.push({pathname: '/summarize', params: { version, book, chapter } })}
+              onPress={() => router.push({pathname: '/bible-chapter-summary', params: { version, book, chapter } })}
               style={{ marginRight: 20 }}
             >
               <IconSymbol size={28} name="list.bullet.rectangle" color={tintColor!} />
