@@ -1,20 +1,20 @@
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Markdown from 'react-native-markdown-display';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
-import { CenteredActivityIndicator } from '@/components/ui/centered-activity-indicator';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import AiThinkingIndicator from '@/components/ui/ai-thinking-indicator';
 
 import { useThemeColor } from '@/hooks/use-theme-color';
 
+import { AiModes } from '@/constants/ai-modes';
 import { Colors } from "@/constants/theme";
 import { UserPreferences } from "@/constants/user-preferences";
-import { AiModes } from '@/constants/ai-modes';
 
 type BibleVerseExplanationScreenParams = {
   version: string;
@@ -82,7 +82,7 @@ export default function BibleVerseExplanationScreen() {
       }>
       <View style={styles.container}>
         {loading ? (
-          <CenteredActivityIndicator size="large" />
+          <AiThinkingIndicator />
         ) : explanation ? (
           <Markdown style={{
             body: { color: markdownTextColor },

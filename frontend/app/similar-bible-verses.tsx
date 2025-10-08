@@ -6,7 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { CenteredActivityIndicator } from '@/components/ui/centered-activity-indicator';
+import AiThinkingIndicator from '@/components/ui/ai-thinking-indicator';
 
 import { Verse } from "@/types/verse";
 import { Colors } from "@/constants/theme";
@@ -74,7 +74,7 @@ export default function SimilarBibleVersesScreen() {
   return (
     <ThemedView style={[styles.container]}>
       {loading ? (
-        <CenteredActivityIndicator size="large" />
+        <AiThinkingIndicator />
       ) : (verses?.length ?? 0) === 0 ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ThemedText style={{ color: Colors.error.text, fontWeight: "bold" }}>No similar verses found.</ThemedText>

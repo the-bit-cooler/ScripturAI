@@ -2,7 +2,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Application from 'expo-application';
 import { useEffect, useState } from "react";
-import { Alert, Button, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Alert, Button, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from "react-native";
 
 import { AppTheme, useAppTheme } from "@/hooks/use-app-theme-provider";
 import { useThemeColor } from "@/hooks/use-theme-color";
@@ -48,13 +48,14 @@ const AppearanceSection = ({ appTheme, setAppTheme, color, selectedColor }: Appe
   );
 };
 
-type ModeSectionProps = {
+type AiModeSectionProps = {
   color: string;
   selectedColor: string;
 }
 
-const ModeSection = ({ color, selectedColor }: ModeSectionProps) => {
+const AiModeSection = ({ color, selectedColor }: AiModeSectionProps) => {
   const [mode, setMode] = useState(AiModes.devotional);
+  const [allowThinkingSound, setAllowThinkingSound] = useState(true);
 
   useEffect(() => {
     const loadPreference = async () => {
@@ -63,13 +64,17 @@ const ModeSection = ({ color, selectedColor }: ModeSectionProps) => {
         if (storedMode) {
           setMode(storedMode);
         }
+        const storedThinkingSound = await AsyncStorage.getItem(UserPreferences.ai_thinking_sound);
+        if (storedThinkingSound === "false") {
+          setAllowThinkingSound(false);
+        }
       } catch (err) {
         console.error('Error loading AI mode preference:', err);
       }
     };
 
     loadPreference();
-  }, [mode]);
+  }, [mode, allowThinkingSound]);
 
   return (
     <View style={{ marginTop: 10 }}>
@@ -98,14 +103,31 @@ const ModeSection = ({ color, selectedColor }: ModeSectionProps) => {
           </TouchableOpacity>
         );
       })}
+      <View style={styles.soundToggleContainer}>
+        <ThemedText style={styles.soundToggleLabel}>Enable Thinking Sound</ThemedText>
+        <Switch
+          value={allowThinkingSound}
+          onValueChange={async (value) => {
+            try {
+              await AsyncStorage.setItem(UserPreferences.ai_thinking_sound, value ? "true" : "false");
+              setAllowThinkingSound(value);
+            } catch (err) {
+              console.warn("Error saving thinking sound preference", err);
+            }
+          }}
+          // trackColor={{ false: "#81b0ff", true: "#81b0ff" }}
+          // thumbColor={allowThinkingSound ? "" : "red"}
+        />
+      </View>
     </View>
   );
 };
 
 export default function SettingsScreen() {
   const { theme, setTheme } = useAppTheme();
-  const textColor: string = useThemeColor({}, "text");
-  const tintColor: string = useThemeColor({}, "tint");
+  const backgroundColor = useThemeColor({}, "cardBackground")
+  const textColor = useThemeColor({}, "text");
+  const tintColor = useThemeColor({}, "tint");
 
 
   const clearStorage = async () => {
@@ -140,7 +162,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ThemedView style={[styles.container]}>
+    <ThemedView style={[styles.container, { backgroundColor }]}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <AppearanceSection
           appTheme={theme}
@@ -149,7 +171,7 @@ export default function SettingsScreen() {
           selectedColor={tintColor}
         />
         <HorizontalThemedSeparator />
-        <ModeSection
+        <AiModeSection
           color={textColor}
           selectedColor={tintColor}
         />
@@ -183,5 +205,15 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 8,
     marginVertical: 6,
+  },
+  soundToggleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 20,
+  },
+  soundToggleLabel: {
+    fontSize: 16,
+    fontWeight: "500",
   },
 });

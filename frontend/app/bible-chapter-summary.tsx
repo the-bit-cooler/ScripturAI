@@ -7,7 +7,7 @@ import Markdown from 'react-native-markdown-display';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
-import { CenteredActivityIndicator } from '@/components/ui/centered-activity-indicator';
+import AiThinkingIndicator from '@/components/ui/ai-thinking-indicator';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -82,7 +82,7 @@ export default function BibleSummaryChapterScreen() {
       }>
       <View style={[styles.container]}>
         {loading ? (
-          <CenteredActivityIndicator size="large" />
+          <AiThinkingIndicator />
         ) : summary ? (
           <Markdown style={{
             body: { color: markdownTextColor },
