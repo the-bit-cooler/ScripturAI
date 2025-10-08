@@ -8,10 +8,10 @@ public static partial class ModeExtensions
   {
     return mode switch
     {
-      Mode.Study => 15,
+      Mode.Study => 20,
       Mode.Pastoral => 30,
       // Mode.Devotional
-      _ => 5
+      _ => 10
     };
   }
 }
