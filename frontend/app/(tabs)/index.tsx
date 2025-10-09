@@ -87,7 +87,7 @@ const ChapterPage = ({ bibleVersion, bibleBook, chapterNumber, shouldLoad, onCon
     );
   }
 
-  if ( (verses?.length ?? 0) === 0) {
+  if ((verses?.length ?? 0) === 0) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ThemedText style={{ color: Colors.error.text, fontWeight: "bold" }}>Chapter failed to load.</ThemedText>
@@ -112,17 +112,17 @@ const ChapterPage = ({ bibleVersion, bibleBook, chapterNumber, shouldLoad, onCon
   );
 };
 
-export default function BookReader() {
-  const router = useRouter();
-  let { book } = useLocalSearchParams<{ book: string }>();
-  if (!book) {
-    book = "John"; // Default book if none provided
-  }
+type BookReaderProps = {
+  book: string;
+  bibleChapter: number
+}
 
+const BookReader = ({ book, bibleChapter }: BookReaderProps) => {
+  const router = useRouter();
   const [version, setVersion] = useState('KJV');
-  const [chapter, setChapter] = useState(1);
+  const [chapter, setChapter] = useState(bibleChapter);
   const [title, setTitle] = useState(`${book} 1`);
-  const [loadedChapters, setLoadedChapters] = useState<number[]>([1]); // Start with chapter 1
+  const [loadedChapters, setLoadedChapters] = useState<number[]>([bibleChapter]);
   const { onContextMenu } = useVerseContextMenu();
 
   const totalChapters = (bookChapterCounts as Record<string, number>)[book];
@@ -160,9 +160,9 @@ export default function BookReader() {
       <Stack.Screen
         options={{
           title: title,
-          headerRight: ({ tintColor }) => 
+          headerRight: ({ tintColor }) =>
             <PlatformPressable
-              onPress={() => router.push({pathname: '/bible-chapter-summary', params: { version, book, chapter } })}
+              onPress={() => router.push({ pathname: '/bible-chapter-summary', params: { version, book, chapter } })}
               style={{ marginRight: 20 }}
             >
               <IconSymbol size={28} name="list.bullet.rectangle" color={tintColor!} />
@@ -179,11 +179,20 @@ export default function BookReader() {
           const currentChapter = Math.round(position + offset) + 1;
           setTitle(`${book} ${currentChapter}`);
         }}
-        onPageSelected={(e) => {
+        onPageSelected={async (e) => {
           const newChapter = e.nativeEvent.position + 1;
           setChapter(newChapter); // Update current chapter
           setTitle(`${book} ${newChapter}`); // Finalize title
           preloadAdjacentChapters(newChapter);
+
+          try {
+            await AsyncStorage.setItem(
+              UserPreferences.saved_reading_location,
+              JSON.stringify({ book, chapter: newChapter })
+            );
+          } catch (error) {
+            console.error("Error saving reading location:", error);
+          }
         }}
       >
         {chapterNumbers.map((ch) => (
@@ -198,6 +207,75 @@ export default function BookReader() {
         ))}
       </PagerView>
     </>
+  );
+}
+
+type BookReaderRouteParams = {
+  book?: string;
+  chapter?: string;
+};
+
+export default function Index() {
+  const router = useRouter();
+  const { book: selectedBook, chapter: selectedChapter } = useLocalSearchParams<BookReaderRouteParams>();
+  const [book, setBook] = useState<string | null>(null);
+  const [chapter, setChapter] = useState<number>(1);
+  const [loading, setLoading] = useState(true);
+
+  // 🔹 When book changes (e.g. user picks a new one), save it
+  useEffect(() => {
+    if (selectedBook) {
+      setBook(selectedBook);
+      try {
+        let selectedChapterNumber = selectedChapter ? Number(selectedChapter) : 1;
+        AsyncStorage.setItem(
+          UserPreferences.saved_reading_location,
+          JSON.stringify({ book: selectedBook, chapter: selectedChapterNumber })
+        );
+      } catch (error) {
+        console.error("Error saving reading location:", error);
+      }
+    }
+  }, [selectedBook, selectedChapter]);
+
+  // 🔹 On first load, if no book in params, restore from AsyncStorage
+  useEffect(() => {
+    const restoreSavedReadingLocation = async () => {
+      try {
+        if (!selectedBook) {
+          const stored = await AsyncStorage.getItem(UserPreferences.saved_reading_location);
+          if (stored) {
+            const { book: savedBook, chapter: savedChapter } = JSON.parse(stored) as { book: string; chapter: number };
+            if (savedBook) {
+              setBook(savedBook);
+              setChapter(savedChapter || 1);
+            }
+          } else {
+            setBook('John'); // default
+            setChapter(1);
+          }
+        }
+      } catch (error) {
+        console.error("Error restoring saved reading location:", error);
+        setBook('John'); // default
+        setChapter(1);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    restoreSavedReadingLocation();
+  }, [selectedBook, router]);
+
+  // 🔹 UI
+  if (loading || !book) {
+    return (
+      <CenteredActivityIndicator size="large" />
+    );
+  }
+
+  return (
+    <BookReader book={book} bibleChapter={chapter!} />
   );
 }
 
