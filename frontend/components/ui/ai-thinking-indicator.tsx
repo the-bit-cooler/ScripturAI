@@ -1,4 +1,4 @@
-import { Audio } from "expo-av";
+import { AudioPlayer, createAudioPlayer } from "expo-audio";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -15,9 +15,9 @@ export default function AiThinkingIndicator() {
   const [colorIndex, setColorIndex] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const soundRef = useRef<AudioPlayer | null>(null);
 
-  // Update characters continuously
+  // 🌀 Animated symbol flow
   useEffect(() => {
     const interval = setInterval(() => {
       setChars((prev) => {
@@ -30,7 +30,7 @@ export default function AiThinkingIndicator() {
     return () => clearInterval(interval);
   }, []);
 
-  // Pulse animation (fade + scale)
+  // 💫 Pulse animation
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
@@ -68,7 +68,7 @@ export default function AiThinkingIndicator() {
     return () => loop.stop();
   }, [fadeAnim, scaleAnim]);
 
-  // Color cycling
+  // 🌈 Cycle colors
   useEffect(() => {
     const colorCycle = setInterval(() => {
       setColorIndex((prev) => (prev + 1) % COLORS.length);
@@ -76,28 +76,27 @@ export default function AiThinkingIndicator() {
     return () => clearInterval(colorCycle);
   }, []);
 
-  // Optional: ambient hum
+  // 🎧 Play ambient hum
   useEffect(() => {
-    let isMounted = true; // optional safety flag
-    let sound: Audio.Sound;
+    let isMounted = true;
+    let player: AudioPlayer | null = null;
 
-    // Async setup
     const loadSound = async () => {
       try {
         const allowSound = await AsyncStorage.getItem(UserPreferences.ai_thinking_sound);
         if ((allowSound ?? "true") === "true") {
-          const { sound: s } = await Audio.Sound.createAsync(
-            require("../../assets/ai-thinking.mp3"),
-            { isLooping: true, volume: 0.4 }
-          );
-          sound = s;
+          // Create and load sound
+          player = createAudioPlayer();
+          player.replace(require("../../assets/ai-thinking.mp3"));
+          player.loop = true;
+          player.volume = 0.4;
           if (isMounted) {
-            await sound.playAsync();
+            player.play();
+            soundRef.current = player;
           }
-          soundRef.current = sound;
         }
-      } catch (e) {
-        console.warn("Error loading AI thinking sound:", e);
+      } catch (err) {
+        console.warn("Error loading AI thinking sound:", err);
       }
     };
 
@@ -106,30 +105,26 @@ export default function AiThinkingIndicator() {
     // Cleanup
     return () => {
       isMounted = false;
-      if (sound) {
-        sound.stopAsync().catch(() => { });  // prevent unhandled promise rejection
-        sound.unloadAsync().catch(() => { });
+      if (player) {
+        player.pause();
+        player.remove();
       }
     };
   }, []);
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <ThemedText
         type="subtitle"
         style={{
           marginTop: 15,
           marginBottom: 15,
-          textAlign: 'center',
-        }}>
+          textAlign: "center",
+        }}
+      >
         Thinking
       </ThemedText>
+
       <View
         style={{
           flexDirection: "row",
