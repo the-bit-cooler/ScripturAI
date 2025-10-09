@@ -13,10 +13,12 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 
 import { useThemeColor } from '@/hooks/use-theme-color';
 
+import { shareMarkdownAsPdf } from "@/utilities/shareMarkdownAsPdf";
+import { getBibleVersionDisplayName } from "@/utilities/get-bible-version-display-name";
+
 import { AiModes } from '@/constants/ai-modes';
 import { Colors } from "@/constants/theme";
 import { UserPreferences } from "@/constants/user-preferences";
-import { shareMarkdownAsPdf } from "@/utilities/shareMarkdownAsPdf";
 
 type BibleVerseExplanationScreenParams = {
   version: string;
@@ -116,6 +118,9 @@ export default function BibleVerseExplanationScreen() {
           <ThemedText type="title" style={styles.verseHeaderText}>
             {text}
           </ThemedText>
+          <ThemedText type="subtitle" style={styles.versionHeaderText}>
+            {getBibleVersionDisplayName(version)}
+          </ThemedText>
         </View>
       }>
       <View style={styles.container}>
@@ -179,6 +184,12 @@ const styles = StyleSheet.create({
   verseHeaderText: {
     fontSize: 24,
     fontWeight: '600',
+    textAlign: 'center',
+  },
+  versionHeaderText: {
+    fontSize: 16,
+    opacity: 0.8,
+    marginTop: 4,
     textAlign: 'center',
   },
   noExplanationContainer: {
