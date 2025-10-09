@@ -1,39 +1,64 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { PlatformPressable } from '@react-navigation/elements';
 import Markdown from 'react-native-markdown-display';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import AiThinkingIndicator from '@/components/ui/ai-thinking-indicator';
+import { IconSymbol } from "@/components/ui/icon-symbol";
 
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 import { AiModes } from '@/constants/ai-modes';
 import { Colors } from "@/constants/theme";
 import { UserPreferences } from "@/constants/user-preferences";
+import { shareMarkdownAsPdf } from "@/utilities/shareMarkdownAsPdf";
 
 type BibleVerseExplanationScreenParams = {
   version: string;
   book: string;
   chapter: string;
   verse: string;
+  text: string;
 };
 
 export default function BibleVerseExplanationScreen() {
-  const { version, book, chapter, verse } = useLocalSearchParams<BibleVerseExplanationScreenParams>();
+  const { version, book, chapter, verse, text } = useLocalSearchParams<BibleVerseExplanationScreenParams>();
   const [explanation, setExplanation] = useState<string>('');
   const [mode, setMode] = useState<string | null>(null); // ✅ null means "not loaded yet"
   const [loading, setLoading] = useState(true);
 
   // ✅ use theme defaults
   const headerBackgroundColor = useThemeColor({}, 'cardBackground');
-  const iconColor = useThemeColor({}, 'textSecondary');
+  const headerTintColor = useThemeColor({}, 'tint');
   const markdownBackgroundColor = useThemeColor({}, 'cardBackground');
   const markdownTextColor = useThemeColor({}, 'text');
+
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const sharePdf = async () => {
+      try {
+        await shareMarkdownAsPdf(explanation, `${book} ${chapter}:${verse}`, mode!);
+      } catch (err) {
+        console.error('Error loading AI mode preference:', err);
+      }
+    };
+    navigation.setOptions({
+      headerTitle: `Explain ${book} ${chapter}:${verse}`, // ✅ dynamically update the modal title
+      headerRight: () => (
+        <PlatformPressable
+          onPress={sharePdf}
+        >
+          <IconSymbol name="square.and.arrow.up" size={34} color={headerTintColor!} style={{ backgroundColor: 'transparent' }} />
+        </PlatformPressable>
+      )
+    });
+  }, [navigation, version, book, chapter, verse, explanation, mode, headerTintColor]);
 
   useEffect(() => {
     const loadModePreference = async () => {
@@ -48,7 +73,7 @@ export default function BibleVerseExplanationScreen() {
     loadModePreference();
   });
 
-  const fetchBibleVerseExplanation = useCallback(async () => {
+  const fetchBibleVerseExplanation = useCallback(async (cacheKey: string) => {
     if (!mode) return; // wait until mode is loaded
     try {
       setLoading(true);
@@ -57,7 +82,9 @@ export default function BibleVerseExplanationScreen() {
       const response = await fetch(url);
       if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch any insight for ${version}:${book}:${chapter}:${verse}.`);
 
-      setExplanation(await response.text());
+      const result = await response.text();
+      setExplanation(result);
+      await AsyncStorage.setItem(cacheKey, result);
     } catch (err) {
       console.error(err);
     } finally {
@@ -66,19 +93,30 @@ export default function BibleVerseExplanationScreen() {
   }, [version, book, chapter, verse, mode]);
 
   useEffect(() => {
-    fetchBibleVerseExplanation();
-  }, [fetchBibleVerseExplanation]);
+    const loadExplanation = async () => {
+      const cacheKey = `${version}:${book}:${chapter}:${verse}:Explanation:${mode}`;
+      const cached = await AsyncStorage.getItem(cacheKey);
+      if (cached) {
+        setExplanation(cached);
+        setLoading(false);
+        return;
+      }
+
+      fetchBibleVerseExplanation(cacheKey);
+    };
+
+    loadExplanation();
+  }, [fetchBibleVerseExplanation, version, book, chapter, verse, mode]);
 
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: headerBackgroundColor, dark: headerBackgroundColor, sepia: headerBackgroundColor }}
       headerImage={
-        <IconSymbol
-          size={220}
-          color={iconColor}
-          name='book.fill'
-          style={styles.headerImage}
-        />
+        <View style={styles.verseHeaderContainer}>
+          <ThemedText type="title" style={styles.verseHeaderText}>
+            {text}
+          </ThemedText>
+        </View>
       }>
       <View style={styles.container}>
         {loading ? (
@@ -118,7 +156,7 @@ export default function BibleVerseExplanationScreen() {
             {explanation}
           </Markdown>
         ) : (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <View style={styles.noExplanationContainer}>
             <ThemedText style={{ color: Colors.error.text, fontWeight: "bold" }}>No insight at the moment.</ThemedText>
             <ThemedText style={{ color: Colors.error.text, fontWeight: "bold" }}>Please try again later.</ThemedText>
           </View>
@@ -132,16 +170,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1
   },
-  headerImage: {
-    color: '#808080',
+  verseHeaderContainer: {
     margin: 'auto',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
-  explanationTheme: {
-    marginBottom: 15,
-    padding: 15,
-    borderRadius: 8,
+  verseHeaderText: {
+    fontSize: 24,
+    fontWeight: '600',
+    textAlign: 'center',
   },
-  explanationText: {
-    fontSize: 16,
+  noExplanationContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

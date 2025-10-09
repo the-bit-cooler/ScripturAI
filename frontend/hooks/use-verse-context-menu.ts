@@ -16,7 +16,7 @@ export function useVerseContextMenu() {
     options.push("Share");
 
     showActionSheetWithOptions(
-      { options, title: `Verse ${verse.verse}` },
+      { options, title: `${verse.book} ${verse.chapter}:${verse.verse}` },
       async (selectedIndex?: number) => {
         switch (options[selectedIndex!]) {
           case "Similar Verses":
@@ -28,7 +28,7 @@ export function useVerseContextMenu() {
           case "Explain Verse":
             router.push({
               pathname: "/bible-verse-explanation",
-              params: { version: verse.version, book: verse.book, chapter: verse.chapter, verse: verse.verse },
+              params: { version: verse.version, book: verse.book, chapter: verse.chapter, verse: verse.verse, text: verse.text },
             });
             break;
           case "Copy":

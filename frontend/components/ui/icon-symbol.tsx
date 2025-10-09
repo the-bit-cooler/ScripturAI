@@ -24,6 +24,7 @@ const MAPPING = {
   'magnifyingglass': 'search',
   'lightbulb.fill': 'lightbulb',
   'list.bullet.rectangle': 'summarize',
+  'square.and.arrow.up': 'share'
 } as IconMapping;
 
 /**
