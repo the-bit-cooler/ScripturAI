@@ -13,7 +13,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 
 import { useThemeColor } from '@/hooks/use-theme-color';
 
-import { shareMarkdownAsPdf } from "@/utilities/shareMarkdownAsPdf";
+import { shareMarkdownAsPdf } from "@/utilities/share-markdown-as-pdf";
 import { getBibleVersionDisplayName } from "@/utilities/get-bible-version-display-name";
 
 import { AiModes } from '@/constants/ai-modes';

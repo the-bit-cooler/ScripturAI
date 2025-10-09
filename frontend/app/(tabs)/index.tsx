@@ -18,7 +18,7 @@ import { Colors } from "@/constants/theme";
 import { UserPreferences } from "@/constants/user-preferences";
 import { Verse } from "@/types/verse";
 
-import bookChapterCounts from "@/assets/data/book-chapter-counts.json";
+import bookChapterCounts from "@/assets/data/bible-book-chapter-counts.json";
 
 type VerseItemProps = {
   verse: Verse;
