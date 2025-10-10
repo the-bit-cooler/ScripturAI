@@ -1,11 +1,13 @@
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
+import * as Application from 'expo-application';
+import { File, Paths } from 'expo-file-system';
 import { marked } from "marked";
 import { Alert } from "react-native";
 
 export async function shareMarkdownAsPdf(
   markdown: string,
-  title: string,
+  verseReference: string,
   aiMode: string
 ) {
   try {
@@ -60,8 +62,7 @@ export async function shareMarkdownAsPdf(
           </style>
         </head>
         <body>
-          <h1>${title}</h1>
-          <h2>AI ${aiMode} Mode</h2>
+          <h2>${Application.applicationName} ${aiMode} Mode</h2>
           <hr />
           ${marked.parse(markdown)}
         </body>
@@ -71,11 +72,14 @@ export async function shareMarkdownAsPdf(
     // Generate PDF
     const { uri } = await Print.printToFileAsync({ html });
 
+    const temp = new File(uri);
+    const file = new File(Paths.cache, `${verseReference.replace(/[\s:]+/g, "-")}-${Application.applicationName}-${aiMode}-Mode.pdf`);
+    temp.copy(file);
+
     // Share the temp file directly
     if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(uri);
+      await Sharing.shareAsync(file.uri);
     } else {
-      console.log("Sharing not available; PDF temp file at:", uri);
       Alert.alert(`Sorry, Sharing not available.`);
     }
   } catch (err) {
