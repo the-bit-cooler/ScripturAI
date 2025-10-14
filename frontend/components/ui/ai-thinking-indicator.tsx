@@ -122,7 +122,7 @@ export default function AiThinkingIndicator() {
           textAlign: "center",
         }}
       >
-        Thinking
+        AI Thinking
       </ThemedText>
 
       <View
