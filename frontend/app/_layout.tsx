@@ -9,12 +9,28 @@ export default function RootLayout() {
     <ActionSheetProvider>
       <AppThemeProvider>
         <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="bible-book-picker" options={{ presentation: 'modal', headerShown: false }} />
-          <Stack.Screen name="settings" options={{ presentation: 'modal', title: 'Settings' }} />
-          <Stack.Screen name="similar-bible-verses" options={{ presentation: 'modal', title: 'Similar Verses' }} />
-          <Stack.Screen name="bible-verse-explanation" options={{ presentation: 'modal', title: 'Verse Explanation' }} />
-          <Stack.Screen name="bible-chapter-summary" options={{ presentation: 'modal', title: 'Chapter Summary' }} />
+          <Stack.Screen name="index" />
+          <Stack.Screen
+            name="settings"
+            options={{
+              title: 'Settings',
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="bible-verse-explanation"
+            options={{
+              presentation: 'modal',
+              headerShown: false
+            }}
+          />
+          <Stack.Screen
+            name="similar-bible-verses"
+            options={{
+              presentation: 'modal',
+              headerShown: false
+            }}
+          />
         </Stack>
         <StatusBar style="auto" />
       </AppThemeProvider>

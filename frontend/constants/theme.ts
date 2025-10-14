@@ -15,6 +15,7 @@ export const Colors: Record<ThemeName, any> = {
     tabIconSelected: "#3B82F6",   // Selected tab icon
     verseNumber: "#7C83FD",       // Verse numbers
     border: "#D8D5CC",            // Light neutral border
+    highlight: "#FFF59D",         // Soft yellow highlight (high readability)
   },
   dark: {
     text: "#ECEDEE",              // Main scripture text
@@ -26,6 +27,7 @@ export const Colors: Record<ThemeName, any> = {
     tabIconSelected: "#60A5FA",   // Selected tab icon
     verseNumber: "#A0A7FF",       // Verse numbers
     border: "#2E2E2E",            // Subtle border (slightly lighter than bg)
+    highlight: "#4B5563",         // Cool gray highlight (subtle, non-glaring)
   },
   sepia: {
     text: "#3E2F1C",              // Main scripture text
@@ -37,9 +39,11 @@ export const Colors: Record<ThemeName, any> = {
     tabIconSelected: "#8B5E3C",   // Selected tab icon
     verseNumber: "#C47F3B",       // Verse numbers
     border: "#D6C49B",            // Soft tan border to match sepia tone
+    highlight: "#F6E27F",         // Warm parchment-yellow highlight
   },
   error: {
-    text: "#FF3B30"
+    text: "#FF3B30",
+    highlight: "#FFD6D6",         // Light red-pink highlight for errors
   }
 };
 

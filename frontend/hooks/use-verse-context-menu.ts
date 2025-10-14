@@ -22,7 +22,7 @@ export function useVerseContextMenu() {
           case "Similar Verses":
             router.push({
               pathname: "/similar-bible-verses",
-              params: { version: verse.version, book: verse.book, chapter: verse.chapter, verse: verse.verse },
+              params: { version: verse.version, book: verse.book, chapter: verse.chapter, verse: verse.verse, text: verse.text },
             });
             break;
           case "Explain Verse":
