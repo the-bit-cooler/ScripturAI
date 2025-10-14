@@ -74,6 +74,12 @@ export async function shareMarkdownAsPdf(
 
     const temp = new File(uri);
     const file = new File(Paths.cache, `${verseReference.replace(/[\s:]+/g, "-")}-${Application.applicationName}-${aiMode}-Mode.pdf`);
+
+    // delete old destination (if present) — File.exists is a boolean property
+    if (file.exists) {
+      file.delete(); // synchronous API on File
+    }
+
     temp.copy(file);
 
     // Share the temp file directly
@@ -84,6 +90,5 @@ export async function shareMarkdownAsPdf(
     }
   } catch (err) {
     Alert.alert('We are unable to share this at the moment. Please try again at another time.')
-    console.error("Error generating or sharing PDF:", err);
   }
 }
