@@ -49,5 +49,5 @@ export function useVerseContextMenu() {
     );
   }, [showActionSheetWithOptions]);
 
-  return { onContextMenu };
+  return onContextMenu ;
 }
