@@ -71,14 +71,12 @@ export default function BibleBookReader() {
 
   // Load chapter
   useEffect(() => {
-    if (!readingLocation) return;
+    if (!readingLocation?.version && !readingLocation?.book && !readingLocation?.chapter) return;
 
     const loadBibleChapter = async () => {
       try {
-        const { version, book, chapter } = readingLocation;
-
         // --- Load cached measured pages for this chapter ---
-        const measuredPagesCacheKey = `${version}:${book}:${chapter}:MeasuredPages`;
+        const measuredPagesCacheKey = `${readingLocation.version}:${readingLocation.book}:${readingLocation.chapter}:MeasuredPages`;
         const savedMeasuredPages = await AsyncStorage.getItem(measuredPagesCacheKey);
         if (savedMeasuredPages) {
           const parsed = JSON.parse(savedMeasuredPages);
@@ -92,7 +90,7 @@ export default function BibleBookReader() {
         }
 
         // --- Load verses for this chapter ---
-        const chapterCacheKey = `${version}:${book}:${chapter}`;
+        const chapterCacheKey = `${readingLocation.version}:${readingLocation.book}:${readingLocation.chapter}`;
         const cachedChapter = await AsyncStorage.getItem(chapterCacheKey);
         if (cachedChapter) {
           const parsed = JSON.parse(cachedChapter);
@@ -104,7 +102,7 @@ export default function BibleBookReader() {
         }
 
         // Fetch chapter from API
-        const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
+        const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${readingLocation.version}/${readingLocation.book}/${readingLocation.chapter}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
         const res = await fetch(url);
         if (res.ok) {
           const data = (await res.json()) as Verse[];
@@ -265,7 +263,7 @@ function Pages({ readingLocation, chapterVerses, measuredChapterPages, changeRea
       }
     };
     saveMeasuredPages();
-  }, [isMeasuring, chapterPageStarts, readingLocation.version, readingLocation.book]);
+  }, [isMeasuring, chapterPageStarts, readingLocation.version, readingLocation.book, readingLocation.chapter]);
 
   // Reset on chapter change
   useEffect(() => {
