@@ -32,8 +32,8 @@ type ReadingLocation = {
 export default function BibleBookReader() {
   const [loading, setLoading] = useState(true);
   const [readingLocation, setReadingLocation] = useState<ReadingLocation | null>(null);
-  const [bookVerses, setBookVerses] = useState<Verse[][]>([]);
-  const [measuredPages, setMeasuredPages] = useState<number[][] | null>(null);
+  const [chapterVerses, setChapterVerses] = useState<Verse[]>([]);
+  const [measuredChapterPages, setMeasuredChapterPages] = useState<number[] | null>(null);
   const [showReadingLocationPickerModal, setShowReadingLocationPickerModal] = useState(false);
 
   const isInitialMount = useRef(true);
@@ -69,53 +69,60 @@ export default function BibleBookReader() {
     loadUserPreferences();
   }, []);
 
-  // Load entire book
+  // Load chapter
   useEffect(() => {
     if (!readingLocation) return;
 
-    const loadBookData = async () => {
+    const loadBibleChapter = async () => {
       try {
-        const chapterCount = getBibleBookChapterCount(readingLocation.book);
+        const { version, book, chapter } = readingLocation;
 
-        // Load measured pages (if any)
-        const measuredPagesCacheKey = `${readingLocation.version}:${readingLocation.book}:MeasuredPages`;
+        // --- Load cached measured pages for this chapter ---
+        const measuredPagesCacheKey = `${version}:${book}:${chapter}:MeasuredPages`;
         const savedMeasuredPages = await AsyncStorage.getItem(measuredPagesCacheKey);
         if (savedMeasuredPages) {
           const parsed = JSON.parse(savedMeasuredPages);
           if (Array.isArray(parsed)) {
-            setMeasuredPages(parsed);
+            setMeasuredChapterPages(parsed);
+          } else {
+            setMeasuredChapterPages(null);
+          }
+        } else {
+          setMeasuredChapterPages(null);
+        }
+
+        // --- Load verses for this chapter ---
+        const chapterCacheKey = `${version}:${book}:${chapter}`;
+        const cachedChapter = await AsyncStorage.getItem(chapterCacheKey);
+        if (cachedChapter) {
+          const parsed = JSON.parse(cachedChapter);
+          if (Array.isArray(parsed)) {
+            setChapterVerses(parsed);
+            setLoading(false);
+            return;
           }
         }
 
-        // Load chapters
-        const promises = Array.from({ length: chapterCount }, (_, i) => {
-          const ch = i + 1;
-          const chapterCacheKey = `${readingLocation.version}:${readingLocation.book}:${ch}`;
-          return AsyncStorage.getItem(chapterCacheKey).then(cached => {
-            if (cached) {
-              return JSON.parse(cached) as Verse[];
-            }
-            const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${readingLocation.version}/${readingLocation.book}/${ch}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
-            return fetch(url).then(res => {
-              if (res.ok) {
-                return res.json().then(data => {
-                  AsyncStorage.setItem(chapterCacheKey, JSON.stringify(data));
-                  return data as Verse[];
-                });
-              }
-              return [];
-            });
-          });
-        });
-
-        const allChapters = await Promise.all(promises);
-        setBookVerses(allChapters);
+        // Fetch chapter from API
+        const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = (await res.json()) as Verse[];
+          await AsyncStorage.setItem(chapterCacheKey, JSON.stringify(data));
+          setChapterVerses(data);
+        } else {
+          setChapterVerses([]);
+        }
+      } catch (err) {
+        console.warn("Error loading chapter", err);
+        setChapterVerses([]);
+      } finally {
         setLoading(false);
-      } catch { }
+      }
     };
 
-    loadBookData();
-  }, [readingLocation?.version, readingLocation?.book]);
+    loadBibleChapter();
+  }, [readingLocation?.version, readingLocation?.book, readingLocation?.chapter]);
 
   // Save user's reading location
   useEffect(() => {
@@ -142,6 +149,10 @@ export default function BibleBookReader() {
   }, [readingLocation]);
 
   const changeReadingLocation = useCallback((changed: Partial<ReadingLocation>) => {
+    if (changed.book !== readingLocation?.book || changed.version !== readingLocation?.version) {
+      setChapterVerses([]);         // clear old book data
+      setMeasuredChapterPages(null);    // clear measured pages cache
+    }
     setLoading(changed.book !== readingLocation?.book || changed.version !== readingLocation?.version);
     setReadingLocation(prev => ({ ...prev!, ...changed }));
   }, [readingLocation]);
@@ -168,6 +179,7 @@ export default function BibleBookReader() {
           <Modal
             key='reading-location-picker-modal'
             isVisible={showReadingLocationPickerModal}
+            backdropOpacity={.05}
             onBackdropPress={() => setShowReadingLocationPickerModal(false)}
             onSwipeComplete={() => setShowReadingLocationPickerModal(false)}
             swipeDirection={['left', 'right']}
@@ -180,7 +192,7 @@ export default function BibleBookReader() {
                   style={{ opacity: .9 }}
                   selectedValue={readingLocation.book}
                   onValueChange={(bk) => {
-                    changeReadingLocation({ ...readingLocation, book: bk!, chapter: 1, page: 0 });
+                    changeReadingLocation({ ...readingLocation, book: bk, chapter: 1, page: 0 });
                   }}
                   itemStyle={{ borderRadius: 200, color: modalPickerColor, backgroundColor: modalBackgroundColor, fontWeight: 'bold', marginBottom: 30 }}
                 >
@@ -192,7 +204,7 @@ export default function BibleBookReader() {
                   style={{ opacity: .9 }}
                   selectedValue={readingLocation.chapter}
                   onValueChange={(ch) => {
-                    changeReadingLocation({ ...readingLocation, chapter: ch!, page: 0 });
+                    changeReadingLocation({ ...readingLocation, chapter: ch, page: 0 });
                   }}
                   itemStyle={{ borderRadius: 200, color: modalPickerColor, backgroundColor: modalBackgroundColor, fontWeight: 'bold' }}
                 >
@@ -205,15 +217,15 @@ export default function BibleBookReader() {
           </Modal>
         </>
       )}
-      {(loading || !bookVerses.length) && (
+      {(loading || !chapterVerses.length) && (
         <CenteredActivityIndicator hint="Loading Book" size="large" />
       )}
-      {(!loading && readingLocation && bookVerses.length) && (
+      {(!loading && readingLocation && chapterVerses.length) && (
         <Pages
           key={`${readingLocation.version}-${readingLocation.book}`}
           readingLocation={readingLocation}
-          bookVerses={bookVerses}
-          measuredPages={measuredPages}
+          chapterVerses={chapterVerses}
+          measuredChapterPages={measuredChapterPages}
           changeReadingLocation={changeReadingLocation}
         />
       )}
@@ -223,68 +235,28 @@ export default function BibleBookReader() {
 
 type PagesParams = {
   readingLocation: ReadingLocation;
-  bookVerses: Verse[][];
-  measuredPages: number[][] | null;
+  chapterVerses: Verse[];
+  measuredChapterPages: number[] | null;
   changeReadingLocation: (changed: Partial<ReadingLocation>) => void;
 };
 
-function Pages({ readingLocation, bookVerses, measuredPages, changeReadingLocation }: PagesParams) {
+function Pages({ readingLocation, chapterVerses, measuredChapterPages, changeReadingLocation }: PagesParams) {
   const pagerRef = useRef<PagerView>(null);
-  const [chapterPageStarts, setChapterPageStarts] = useState<number[][]>(measuredPages ?? bookVerses.map(() => [0]));
-  const [chapterDone, setChapterDone] = useState<boolean[]>(Array(bookVerses.length).fill(measuredPages ? true : false));
-  const [isMeasuring, setIsMeasuring] = useState(!measuredPages);
-  const [currentChapter, setCurrentChapter] = useState(readingLocation.chapter);
-  const [currentLocalPage, setCurrentLocalPage] = useState(readingLocation.page);
+  const [chapterPageStarts, setChapterPageStarts] = useState<number[]>(measuredChapterPages ?? [0]);
+  const [chapterDone, setChapterDone] = useState<boolean>(!!measuredChapterPages);
+  const [isMeasuring, setIsMeasuring] = useState(!measuredChapterPages);
 
   const onContextMenu = useVerseContextMenu();
 
-  // Compute global page index
-  const computeGlobalPage = useCallback((chapter: number, localPage: number): number => {
-    let cum = 0;
-    const chIdx = chapter - 1;
-    for (let i = 0; i < chIdx; i++) {
-      cum += 1 + chapterPageStarts[i].length; // 1 for summary + verse pages
-    }
-    if (localPage === 0) return cum;
-    if (localPage === -1) return cum + chapterPageStarts[chIdx].length;
-    return cum + localPage;
-  }, [chapterPageStarts]);
-
-  // Convert global page to chapter and local page
-  const computeChapterAndLocalPage = useCallback((globalPage: number): { chapter: number; localPage: number } => {
-    let cum = 0;
-    for (let chIdx = 0; chIdx < bookVerses.length; chIdx++) {
-      const pagesInChapter = 1 + chapterPageStarts[chIdx].length;
-      if (globalPage < cum + pagesInChapter) {
-        const localPage = globalPage - cum;
-        return { chapter: chIdx + 1, localPage };
-      }
-      cum += pagesInChapter;
-    }
-    return { chapter: bookVerses.length, localPage: chapterPageStarts[bookVerses.length - 1].length };
-  }, [bookVerses, chapterPageStarts]);
-
-  // Handle chapter/page changes without book/version change
+  // Mark measuring complete
   useEffect(() => {
-    if (readingLocation.chapter !== currentChapter || readingLocation.page !== currentLocalPage) {
-      const globalPage = computeGlobalPage(readingLocation.chapter, readingLocation.page);
-      pagerRef.current?.setPageWithoutAnimation(globalPage);
-      setCurrentChapter(readingLocation.chapter);
-      setCurrentLocalPage(readingLocation.page);
-    }
-  }, [readingLocation.chapter, readingLocation.page, computeGlobalPage]);
-
-  // Check if all chapters are measured
-  useEffect(() => {
-    if (chapterDone.every(done => done)) {
-      setIsMeasuring(false);
-    }
+    if (chapterDone) setIsMeasuring(false);
   }, [chapterDone]);
 
   useEffect(() => {
     const saveMeasuredPages = async () => {
       if (!isMeasuring && chapterPageStarts.length > 0) {
-        const cacheKey = `${readingLocation.version}:${readingLocation.book}:MeasuredPages`;
+        const cacheKey = `${readingLocation.version}:${readingLocation.book}:${readingLocation.chapter}:MeasuredPages`;
         try {
           await AsyncStorage.setItem(cacheKey, JSON.stringify(chapterPageStarts));
         } catch (err) {
@@ -295,100 +267,118 @@ function Pages({ readingLocation, bookVerses, measuredPages, changeReadingLocati
     saveMeasuredPages();
   }, [isMeasuring, chapterPageStarts, readingLocation.version, readingLocation.book]);
 
-  // Add next page for a specific chapter
-  const addNextPage = useCallback((chapter: number, nextStart: number) => {
-    const chIdx = chapter - 1;
-    if (nextStart < bookVerses[chIdx].length) {
-      setChapterPageStarts(prev => {
-        const newStarts = [...prev];
-        if (newStarts[chIdx][newStarts[chIdx].length - 1] < nextStart) {
-          newStarts[chIdx] = [...newStarts[chIdx], nextStart];
-        }
-        return newStarts;
-      });
-    }
-  }, [bookVerses]);
+  // Reset on chapter change
+  useEffect(() => {
+    setChapterPageStarts(measuredChapterPages ?? [0]);
+    setChapterDone(!!measuredChapterPages);
+    setIsMeasuring(!measuredChapterPages);
+  }, [measuredChapterPages, readingLocation.chapter]);
 
-  // Total global pages
-  const totalGlobalPages = bookVerses.reduce((acc, _, chIdx) => acc + 1 + chapterPageStarts[chIdx].length, 0);
+  // Add next page for a specific chapter
+  const addNextPage = useCallback(
+    (nextStart: number) => {
+      if (nextStart < chapterVerses.length) {
+        setChapterPageStarts((prev) => {
+          if (prev[prev.length - 1] < nextStart) {
+            return [...prev, nextStart];
+          }
+          return prev;
+        });
+      }
+    },
+    [chapterVerses]
+  );
+
   const bibleBooks = getBibleBookList();
 
   return isMeasuring ? (
     <>
       <CenteredActivityIndicator hint="Loading Book" size="large" />
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0 }}>
-        {bookVerses.map((verses, chIdx) => (
-          chapterPageStarts[chIdx].map((start, pageIdx) => (
-            <MeasuredPage
-              key={`${chIdx}-${pageIdx}`}
-              chapter={chIdx + 1}
-              start={start}
-              verses={verses}
-              isLast={pageIdx === chapterPageStarts[chIdx].length - 1}
-              onContextMenu={onContextMenu}
-              addNextPage={addNextPage}
-              setChapterDone={(done) => setChapterDone(prev => {
-                const newDone = [...prev];
-                newDone[chIdx] = done;
-                return newDone;
-              })}
-            />
-          ))
+        {chapterPageStarts.map((start, pageIdx) => (
+          <MeasuredPage
+            key={`${start}-${pageIdx}`}
+            start={start}
+            verses={chapterVerses}
+            isLast={pageIdx === chapterPageStarts.length - 1}
+            onContextMenu={onContextMenu}
+            addNextPage={addNextPage}
+            setChapterDone={setChapterDone}
+          />
         ))}
       </View>
     </>
   ) : (
     <PagerView
       ref={pagerRef}
-      key={`${readingLocation.version}-${readingLocation.book}`}
+      key={`${readingLocation.version}-${readingLocation.book}-${readingLocation.chapter}-${chapterPageStarts.length}`}
       style={{ flex: 1 }}
-      initialPage={computeGlobalPage(readingLocation.chapter, readingLocation.page)}
+      initialPage={readingLocation.page === -1 ? chapterPageStarts.length : readingLocation.page}
       overdrag={true} // iOS
       overScrollMode="always" // Android
-      onPageScroll={({ nativeEvent }) => {
-        const { position, offset } = nativeEvent;
-        if (position >= totalGlobalPages - 1 && offset > 0) {
-          const currentBookIndex = bibleBooks.indexOf(readingLocation.book);
-          if (currentBookIndex < bibleBooks.length - 1) {
-            changeReadingLocation({ ...readingLocation, book: bibleBooks[currentBookIndex + 1], chapter: 1, page: 0 });
+      onPageScroll={({ nativeEvent: { position, offset } }) => {
+        const chapterCount = getBibleBookChapterCount(readingLocation.book);
+        if (position >= chapterPageStarts.length && offset > 0) {
+          if (readingLocation.chapter < chapterCount) {
+            changeReadingLocation({
+              ...readingLocation,
+              chapter: readingLocation.chapter + 1,
+              page: 0,
+            });
+          } else {
+            const bookIndex = bibleBooks.indexOf(readingLocation.book);
+            if (bookIndex < bibleBooks.length - 1) {
+              changeReadingLocation({
+                ...readingLocation,
+                book: bibleBooks[bookIndex + 1],
+                chapter: 1,
+                page: 0,
+              });
+            }
           }
         }
+
         if (position < 0 && offset > 0) {
-          const currentBookIndex = bibleBooks.indexOf(readingLocation.book);
-          if (currentBookIndex > 0) {
-            const prevBook = bibleBooks[currentBookIndex - 1];
-            const prevBookChapterCount = getBibleBookChapterCount(prevBook);
-            changeReadingLocation({ ...readingLocation, book: prevBook, chapter: prevBookChapterCount, page: -1 });
+          if (readingLocation.chapter > 1) {
+            changeReadingLocation({
+              ...readingLocation,
+              chapter: readingLocation.chapter - 1,
+              page: -1,
+            });
+          } else {
+            const bookIndex = bibleBooks.indexOf(readingLocation.book);
+            if (bookIndex > 0) {
+              const prevBook = bibleBooks[bookIndex - 1];
+              const prevBookChapterCount = getBibleBookChapterCount(prevBook);
+              changeReadingLocation({
+                ...readingLocation,
+                book: prevBook,
+                chapter: prevBookChapterCount,
+                page: -1,
+              });
+            }
           }
         }
       }}
       onPageSelected={({ nativeEvent: { position } }) => {
-        const { chapter, localPage } = computeChapterAndLocalPage(position);
-        setCurrentChapter(chapter);
-        setCurrentLocalPage(localPage);
-        changeReadingLocation({ ...readingLocation, chapter, page: localPage });
+        changeReadingLocation({ ...readingLocation, page: position });
       }}
     >
-      {bookVerses.map((verses, chIdx) => {
-        const chapter = chIdx + 1;
-        return [
-          <ChapterSummary
-            key={`summary-${chapter}`}
-            version={readingLocation.version}
-            book={readingLocation.book}
-            chapter={chapter}
-          />,
-          ...chapterPageStarts[chIdx].map((start, pageIdx) => (
-            <Page
-              key={`page-${chapter}-${pageIdx}`}
-              chapter={chapter}
-              page={pageIdx + 1}
-              verses={verses.slice(start, chapterPageStarts[chIdx][pageIdx + 1] || verses.length)}
-              onContextMenu={onContextMenu}
-            />
-          )),
-        ];
-      }).flat()}
+      <ChapterSummary
+        key={`summary-${readingLocation.chapter}`}
+        version={readingLocation.version}
+        book={readingLocation.book}
+        chapter={readingLocation.chapter}
+      />
+      {chapterPageStarts.map((start, pageIdx) => (
+        <Page
+          key={`page-${pageIdx}`}
+          chapter={readingLocation.chapter}
+          page={pageIdx + 1}
+          verses={chapterVerses.slice(start, chapterPageStarts[pageIdx + 1] || chapterVerses.length)}
+          onContextMenu={onContextMenu}
+        />
+      ))}
     </PagerView>
   );
 }
@@ -445,24 +435,23 @@ function Page({ chapter, page, verses, onContextMenu }: PageProps) {
 }
 
 type MeasuredPageProps = {
-  chapter: number;
   start: number;
   verses: Verse[];
   isLast: boolean;
   onContextMenu: (verse: Verse) => void;
-  addNextPage: (chapter: number, nextStart: number) => void;
+  addNextPage: (nextStart: number) => void;
   setChapterDone: (done: boolean) => void;
 };
 
-function MeasuredPage({ chapter, start, verses, isLast, onContextMenu, addNextPage, setChapterDone }: MeasuredPageProps) {
+function MeasuredPage({ start, verses, isLast, onContextMenu, addNextPage, setChapterDone }: MeasuredPageProps) {
   const [viewableCount, setViewableCount] = useState(0);
   const verseNumberColor = useThemeColor({}, "verseNumber");
 
   useEffect(() => {
     if (isLast && viewableCount > 0 && start + viewableCount < verses.length) {
-      addNextPage(chapter, start + viewableCount);
+      addNextPage(start + viewableCount);
     }
-  }, [viewableCount, isLast, start, verses.length, chapter, addNextPage]);
+  }, [viewableCount, isLast, start, verses.length, addNextPage]);
 
   const handleViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken<Verse>[] }) => {
@@ -500,7 +489,7 @@ function MeasuredPage({ chapter, start, verses, isLast, onContextMenu, addNextPa
         onViewableItemsChanged={handleViewableItemsChanged}
         viewabilityConfig={{
           itemVisiblePercentThreshold: 90,
-          minimumViewTime: 100,
+          minimumViewTime: 300,
         }}
       />
     </View>
