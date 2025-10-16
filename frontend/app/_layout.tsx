@@ -9,7 +9,12 @@ export default function RootLayout() {
     <ActionSheetProvider>
       <AppThemeProvider>
         <Stack>
-          <Stack.Screen name="index" />
+          <Stack.Screen
+            name="index"
+            options={{
+              title: 'Bible',
+            }}
+          />
           <Stack.Screen
             name="settings"
             options={{
