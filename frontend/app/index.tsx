@@ -34,6 +34,7 @@ export default function BibleBookReader() {
   const [loading, setLoading] = useState(true);
   const [readingLocation, setReadingLocation] = useState<ReadingLocation | null>(null);
   const [bookVerses, setBookVerses] = useState<Verse[][]>([]);
+  const [measuredPages, setMeasuredPages] = useState<number[][] | null>(null);
   const [showReadingLocationPickerModal, setShowReadingLocationPickerModal] = useState(false);
 
   const isInitialMount = useRef(true);
@@ -75,12 +76,23 @@ export default function BibleBookReader() {
 
     const loadBookData = async () => {
       try {
-        // const { version, book } = readingLocation;
         const chapterCount = getBibleBookChapterCount(readingLocation.book);
+
+        // Load measured pages (if any)
+        const measuredPagesCacheKey = `${readingLocation.version}:${readingLocation.book}:MeasuredPages`;
+        const savedMeasuredPages = await AsyncStorage.getItem(measuredPagesCacheKey);
+        if (savedMeasuredPages) {
+          const parsed = JSON.parse(savedMeasuredPages);
+          if (Array.isArray(parsed)) {
+            setMeasuredPages(parsed);
+          }
+        }
+
+        // Load chapters
         const promises = Array.from({ length: chapterCount }, (_, i) => {
           const ch = i + 1;
-          const cacheKey = `${readingLocation.version}:${readingLocation.book}:${ch}`;
-          return AsyncStorage.getItem(cacheKey).then(cached => {
+          const chapterCacheKey = `${readingLocation.version}:${readingLocation.book}:${ch}`;
+          return AsyncStorage.getItem(chapterCacheKey).then(cached => {
             if (cached) {
               return JSON.parse(cached) as Verse[];
             }
@@ -88,7 +100,7 @@ export default function BibleBookReader() {
             return fetch(url).then(res => {
               if (res.ok) {
                 return res.json().then(data => {
-                  AsyncStorage.setItem(cacheKey, JSON.stringify(data));
+                  AsyncStorage.setItem(chapterCacheKey, JSON.stringify(data));
                   return data as Verse[];
                 });
               }
@@ -96,6 +108,7 @@ export default function BibleBookReader() {
             });
           });
         });
+
         const allChapters = await Promise.all(promises);
         setBookVerses(allChapters);
         setLoading(false);
@@ -201,6 +214,7 @@ export default function BibleBookReader() {
           key={`${readingLocation.version}-${readingLocation.book}`}
           readingLocation={readingLocation}
           bookVerses={bookVerses}
+          measuredPages={measuredPages}
           changeReadingLocation={changeReadingLocation}
         />
       )}
@@ -211,14 +225,15 @@ export default function BibleBookReader() {
 type PagesParams = {
   readingLocation: ReadingLocation;
   bookVerses: Verse[][];
+  measuredPages: number[][] | null;
   changeReadingLocation: (changed: Partial<ReadingLocation>) => void;
 };
 
-function Pages({ readingLocation, bookVerses, changeReadingLocation }: PagesParams) {
+function Pages({ readingLocation, bookVerses, measuredPages, changeReadingLocation }: PagesParams) {
   const pagerRef = useRef<PagerView>(null);
-  const [chapterPageStarts, setChapterPageStarts] = useState<number[][]>(bookVerses.map(() => [0]));
-  const [chapterDone, setChapterDone] = useState<boolean[]>(Array(bookVerses.length).fill(false));
-  const [isMeasuring, setIsMeasuring] = useState(true);
+  const [chapterPageStarts, setChapterPageStarts] = useState<number[][]>(measuredPages ?? bookVerses.map(() => [0]));
+  const [chapterDone, setChapterDone] = useState<boolean[]>(Array(bookVerses.length).fill(measuredPages ? true: false));
+  const [isMeasuring, setIsMeasuring] = useState(!measuredPages);
   const [currentChapter, setCurrentChapter] = useState(readingLocation.chapter);
   const [currentLocalPage, setCurrentLocalPage] = useState(readingLocation.page);
 
@@ -266,6 +281,20 @@ function Pages({ readingLocation, bookVerses, changeReadingLocation }: PagesPara
       setIsMeasuring(false);
     }
   }, [chapterDone]);
+
+  useEffect(() => {
+  const saveMeasuredPages = async () => {
+    if (!isMeasuring && chapterPageStarts.length > 0) {
+      const cacheKey = `${readingLocation.version}:${readingLocation.book}:MeasuredPages`;
+      try {
+        await AsyncStorage.setItem(cacheKey, JSON.stringify(chapterPageStarts));
+      } catch (err) {
+        console.warn("Failed to save measured pages", err);
+      }
+    }
+  };
+  saveMeasuredPages();
+}, [isMeasuring, chapterPageStarts, readingLocation.version, readingLocation.book]);
 
   // Add next page for a specific chapter
   const addNextPage = useCallback((chapter: number, nextStart: number) => {
