@@ -179,7 +179,7 @@ export default function SettingsScreen() {
         <View style={{ marginTop: 10 }}>
           <Button title="Clear App Data" color={Colors.error.text} onPress={clearStorage} />
         </View>
-        <View style={{ marginTop: 20 }}>
+        <View style={{ marginTop: 20, marginBottom: 30 }}>
           <Button title="About" onPress={showAbout} />
         </View>
       </ScrollView>
