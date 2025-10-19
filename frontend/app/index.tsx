@@ -3,14 +3,14 @@ import { Picker } from '@react-native-picker/picker';
 import { PlatformPressable } from '@react-navigation/elements';
 import { FlashList, FlashListRef } from "@shopify/flash-list";
 import { Stack, useRouter } from "expo-router";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { Dispatch, memo, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
 import { AppState, TouchableOpacity, View, ViewToken } from "react-native";
 import Modal from "react-native-modal";
 import PagerView from "react-native-pager-view";
 
-import { ThemedText } from "@/components/themed-text";
 import { CenteredActivityIndicator } from "@/components/ui/centered-activity-indicator";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { VerseView } from "@/components/verse-view";
 import BibleChapterSummary from "./bible-chapter-summary";
 
 import { getBibleBookChapterCount } from "@/utilities/get-bible-book-chapter-count";
@@ -21,6 +21,7 @@ import { useVerseContextMenu } from "@/hooks/use-verse-context-menu";
 
 import { Verse } from "@/types/verse";
 import { UserPreferences } from "@/constants/user-preferences";
+import { useChapterPages } from "@/hooks/use-chapter-pages";
 
 type ReadingLocation = {
   version: string;
@@ -32,8 +33,6 @@ type ReadingLocation = {
 export default function BibleBookReader() {
   const [loading, setLoading] = useState(true);
   const [readingLocation, setReadingLocation] = useState<ReadingLocation | null>(null);
-  const [chapterVerses, setChapterVerses] = useState<Verse[]>([]);
-  const [measuredChapterPages, setMeasuredChapterPages] = useState<number[] | null>(null);
   const [showReadingLocationPickerModal, setShowReadingLocationPickerModal] = useState(false);
 
   const isInitialMount = useRef(true);
@@ -63,64 +62,13 @@ export default function BibleBookReader() {
         }
       } catch {
         setReadingLocation({ version: defaultVersion, book: defaultBibleBook, chapter: defaultBibleChapter, page: defaultReaderPage });
-      }
-    };
-
-    loadUserPreferences();
-  }, []);
-
-  // Load chapter
-  useEffect(() => {
-    if (!readingLocation?.version && !readingLocation?.book && !readingLocation?.chapter) return;
-
-    const loadBibleChapter = async () => {
-      try {
-        // --- Load cached measured pages for this chapter ---
-        const measuredPagesCacheKey = `${readingLocation.version}:${readingLocation.book}:${readingLocation.chapter}:MeasuredPages`;
-        const savedMeasuredPages = await AsyncStorage.getItem(measuredPagesCacheKey);
-        if (savedMeasuredPages) {
-          const parsed = JSON.parse(savedMeasuredPages);
-          if (Array.isArray(parsed)) {
-            setMeasuredChapterPages(parsed);
-          } else {
-            setMeasuredChapterPages(null);
-          }
-        } else {
-          setMeasuredChapterPages(null);
-        }
-
-        // --- Load verses for this chapter ---
-        const chapterCacheKey = `${readingLocation.version}:${readingLocation.book}:${readingLocation.chapter}`;
-        const cachedChapter = await AsyncStorage.getItem(chapterCacheKey);
-        if (cachedChapter) {
-          const parsed = JSON.parse(cachedChapter);
-          if (Array.isArray(parsed)) {
-            setChapterVerses(parsed);
-            setLoading(false);
-            return;
-          }
-        }
-
-        // Fetch chapter from API
-        const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${readingLocation.version}/${readingLocation.book}/${readingLocation.chapter}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
-        const res = await fetch(url);
-        if (res.ok) {
-          const data = (await res.json()) as Verse[];
-          await AsyncStorage.setItem(chapterCacheKey, JSON.stringify(data));
-          setChapterVerses(data);
-        } else {
-          setChapterVerses([]);
-        }
-      } catch (err) {
-        console.warn("Error loading chapter", err);
-        setChapterVerses([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadBibleChapter();
-  }, [readingLocation?.version, readingLocation?.book, readingLocation?.chapter]);
+    loadUserPreferences();
+  }, []);
 
   // Save user's reading location
   useEffect(() => {
@@ -147,11 +95,6 @@ export default function BibleBookReader() {
   }, [readingLocation]);
 
   const changeReadingLocation = useCallback((changed: Partial<ReadingLocation>) => {
-    if (changed.book !== readingLocation?.book || changed.version !== readingLocation?.version) {
-      setChapterVerses([]);         // clear old book data
-      setMeasuredChapterPages(null);    // clear measured pages cache
-    }
-    setLoading(changed.book !== readingLocation?.book || changed.version !== readingLocation?.version);
     setReadingLocation(prev => ({ ...prev!, ...changed }));
   }, [readingLocation]);
 
@@ -215,15 +158,13 @@ export default function BibleBookReader() {
           </Modal>
         </>
       )}
-      {(loading || !chapterVerses.length) && (
+      {(loading) && (
         <CenteredActivityIndicator hint="Loading Book" size="large" />
       )}
-      {(!loading && readingLocation && chapterVerses.length) && (
+      {(!loading && readingLocation) && (
         <Pages
           key={`${readingLocation.version}-${readingLocation.book}`}
           readingLocation={readingLocation}
-          chapterVerses={chapterVerses}
-          measuredChapterPages={measuredChapterPages}
           changeReadingLocation={changeReadingLocation}
         />
       )}
@@ -233,90 +174,33 @@ export default function BibleBookReader() {
 
 type PagesParams = {
   readingLocation: ReadingLocation;
-  chapterVerses: Verse[];
-  measuredChapterPages: number[] | null;
   changeReadingLocation: (changed: Partial<ReadingLocation>) => void;
 };
 
-function Pages({ readingLocation, chapterVerses, measuredChapterPages, changeReadingLocation }: PagesParams) {
+function Pages({ readingLocation, changeReadingLocation }: PagesParams) {
   const pagerRef = useRef<PagerView>(null);
-  const [chapterPageStarts, setChapterPageStarts] = useState<number[]>(measuredChapterPages ?? [0]);
-  const [chapterDone, setChapterDone] = useState<boolean>(!!measuredChapterPages);
-  const [isMeasuring, setIsMeasuring] = useState(!measuredChapterPages);
+  const { loading, pages, measureView } = useChapterPages(readingLocation.version, readingLocation.book, readingLocation.chapter);
 
   const onContextMenu = useVerseContextMenu();
 
-  // Mark measuring complete
-  useEffect(() => {
-    if (chapterDone) setIsMeasuring(false);
-  }, [chapterDone]);
-
-  useEffect(() => {
-    const saveMeasuredPages = async () => {
-      if (!isMeasuring && chapterPageStarts.length > 0) {
-        const cacheKey = `${readingLocation.version}:${readingLocation.book}:${readingLocation.chapter}:MeasuredPages`;
-        try {
-          await AsyncStorage.setItem(cacheKey, JSON.stringify(chapterPageStarts));
-        } catch (err) {
-          console.warn("Failed to save measured pages", err);
-        }
-      }
-    };
-    saveMeasuredPages();
-  }, [isMeasuring, chapterPageStarts, readingLocation.version, readingLocation.book, readingLocation.chapter]);
-
-  // Reset on chapter change
-  useEffect(() => {
-    setChapterPageStarts(measuredChapterPages ?? [0]);
-    setChapterDone(!!measuredChapterPages);
-    setIsMeasuring(!measuredChapterPages);
-  }, [measuredChapterPages, readingLocation.chapter]);
-
-  // Add next page for a specific chapter
-  const addNextPage = useCallback(
-    (nextStart: number) => {
-      if (nextStart < chapterVerses.length) {
-        setChapterPageStarts((prev) => {
-          if (prev[prev.length - 1] < nextStart) {
-            return [...prev, nextStart];
-          }
-          return prev;
-        });
-      }
-    },
-    [chapterVerses]
-  );
-
   const bibleBooks = getBibleBookList();
 
-  return isMeasuring ? (
+  return loading || !pages ? (
     <>
       <CenteredActivityIndicator hint="Loading Book" size="large" />
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0 }}>
-        {chapterPageStarts.map((start, pageIdx) => (
-          <MeasuredPage
-            key={`${start}-${pageIdx}`}
-            start={start}
-            verses={chapterVerses}
-            isLast={pageIdx === chapterPageStarts.length - 1}
-            onContextMenu={onContextMenu}
-            addNextPage={addNextPage}
-            setChapterDone={setChapterDone}
-          />
-        ))}
-      </View>
+      {measureView}
     </>
   ) : (
     <PagerView
       ref={pagerRef}
-      key={`${readingLocation.version}-${readingLocation.book}-${readingLocation.chapter}-${chapterPageStarts.length}`}
+      key={`${readingLocation.version}-${readingLocation.book}-${readingLocation.chapter}`}
       style={{ flex: 1 }}
-      initialPage={readingLocation.page === -1 ? chapterPageStarts.length : readingLocation.page}
+      initialPage={readingLocation.page === -1 ? pages.length : readingLocation.page}
       overdrag={true} // iOS
       overScrollMode="always" // Android
       onPageScroll={({ nativeEvent: { position, offset } }) => {
         const chapterCount = getBibleBookChapterCount(readingLocation.book);
-        if (position >= chapterPageStarts.length && offset > 0) {
+        if (position >= pages.length && offset > 0) {
           if (readingLocation.chapter < chapterCount) {
             changeReadingLocation({
               ...readingLocation,
@@ -368,12 +252,12 @@ function Pages({ readingLocation, chapterVerses, measuredChapterPages, changeRea
         book={readingLocation.book}
         chapter={readingLocation.chapter}
       />
-      {chapterPageStarts.map((start, pageIdx) => (
+      {pages.map((page, pageIdx) => (
         <Page
           key={`page-${pageIdx}`}
           chapter={readingLocation.chapter}
-          page={pageIdx + 1}
-          verses={chapterVerses.slice(start, chapterPageStarts[pageIdx + 1] || chapterVerses.length)}
+          page={page.pageNumber}
+          verses={page.verses}
           onContextMenu={onContextMenu}
         />
       ))}
@@ -432,68 +316,6 @@ function Page({ chapter, page, verses, onContextMenu }: PageProps) {
   );
 }
 
-type MeasuredPageProps = {
-  start: number;
-  verses: Verse[];
-  isLast: boolean;
-  onContextMenu: (verse: Verse) => void;
-  addNextPage: (nextStart: number) => void;
-  setChapterDone: (done: boolean) => void;
-};
-
-function MeasuredPage({ start, verses, isLast, onContextMenu, addNextPage, setChapterDone }: MeasuredPageProps) {
-  const [viewableCount, setViewableCount] = useState(0);
-  const verseNumberColor = useThemeColor({}, "verseNumber");
-
-  useEffect(() => {
-    if (isLast && viewableCount > 0 && start + viewableCount < verses.length) {
-      addNextPage(start + viewableCount);
-    }
-  }, [viewableCount, isLast, start, verses.length, addNextPage]);
-
-  const handleViewableItemsChanged = useCallback(
-    ({ viewableItems }: { viewableItems: ViewToken<Verse>[] }) => {
-      let isLastVerse = false;
-      const maxConsecutive = viewableItems.reduce((max, item) => {
-        isLastVerse = item.item.verse === verses.length;
-        if (item.index === max) return max + 1;
-        return max;
-      }, 0);
-      if (maxConsecutive > viewableCount) {
-        setViewableCount(maxConsecutive);
-      }
-      if (isLastVerse && isLast) {
-        setChapterDone(true);
-      }
-    },
-    [viewableCount, verses, isLast, setChapterDone]
-  );
-
-  const visibleData = verses.slice(start);
-
-  return (
-    <View style={{ flex: 1, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
-      <FlashList
-        data={visibleData}
-        scrollEnabled={false}
-        keyExtractor={(v) => v.verse.toString()}
-        renderItem={({ item }) => (
-          <VerseItem
-            verse={item}
-            verseNumberColor={verseNumberColor}
-            onContextMenu={onContextMenu}
-          />
-        )}
-        onViewableItemsChanged={handleViewableItemsChanged}
-        viewabilityConfig={{
-          itemVisiblePercentThreshold: 90,
-          minimumViewTime: 300,
-        }}
-      />
-    </View>
-  );
-}
-
 type VerseItemProps = {
   verse: Verse;
   verseNumberColor: string;
@@ -502,21 +324,9 @@ type VerseItemProps = {
 
 const VerseItem = memo(({ verse, verseNumberColor, onContextMenu }: VerseItemProps) => {
   return (
-    <View style={{ marginVertical: 7, paddingHorizontal: 16 }}>
-      <TouchableOpacity onLongPress={() => onContextMenu(verse)}>
-        <ThemedText type="subtitle">
-          <ThemedText
-            type="defaultSemiBold"
-            style={{ fontWeight: "bold", color: verseNumberColor }}
-          >
-            {"     "}
-            {verse.verse}
-            {"   "}
-          </ThemedText>
-          {verse.text}
-        </ThemedText>
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity onLongPress={() => onContextMenu(verse)}>
+      <VerseView verse={verse} verseNumberColor={verseNumberColor} />
+    </TouchableOpacity>
   );
 });
 VerseItem.displayName = 'VerseItem';
