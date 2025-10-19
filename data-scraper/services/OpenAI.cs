@@ -6,7 +6,7 @@ public class OpenAIService
 {
   static readonly AzureOpenAIClient openAIClient = new(new Uri(Environment.GetEnvironmentVariable("OPEN_AI_URL")!), new Azure.AzureKeyCredential(Environment.GetEnvironmentVariable("OPEN_AI_KEY")!));
 
-  public static async Task ProcessBatch(List<Verse> batch)
+  public static async Task ProcessBatchEmbeddings(List<Verse> batch)
   {
     // Generate embeddings
     var texts = batch.ConvertAll(v => v.text);
