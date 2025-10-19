@@ -26,7 +26,7 @@ public class SummarizeBibleChapter
     if (!Enum.TryParse(mode, true, out AiService.Mode aiMode))
       aiMode = AiService.Mode.Devotional; // default fallback
 
-    string userPrompt = $"Summarize {book}:{chapter} from the {version} version of the Bible. At the top of your response (GitHub Markdown) use the following subtitle: Summary of {book}:{chapter} ({version})";
+    string userPrompt = $"Summarize {book} {chapter} from the {version} version of the Bible. At the top of your response (GitHub Markdown) use the following subtitle: Summary of {book} {chapter} ({version})";
     string cacheId = $"{book}:{chapter}:{version}";
     string cachePartitionKey = $"{book}:Summary:{aiMode}";
     string cacheDescription = $"a summary for {cacheId}";
