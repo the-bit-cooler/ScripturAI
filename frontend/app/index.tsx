@@ -3,8 +3,8 @@ import { Picker } from '@react-native-picker/picker';
 import { PlatformPressable } from '@react-navigation/elements';
 import { FlashList, FlashListRef } from "@shopify/flash-list";
 import { Stack, useRouter } from "expo-router";
-import { Dispatch, memo, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
-import { AppState, TouchableOpacity, View, ViewToken } from "react-native";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { AppState, TouchableOpacity, View } from "react-native";
 import Modal from "react-native-modal";
 import PagerView from "react-native-pager-view";
 
@@ -96,7 +96,7 @@ export default function BibleBookReader() {
 
   const changeReadingLocation = useCallback((changed: Partial<ReadingLocation>) => {
     setReadingLocation(prev => ({ ...prev!, ...changed }));
-  }, [readingLocation]);
+  }, []);
 
   return (
     <>
