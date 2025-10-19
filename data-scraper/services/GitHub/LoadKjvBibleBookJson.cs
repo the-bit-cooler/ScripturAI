@@ -5,8 +5,10 @@ namespace ScripturAI.Services;
 
 public partial class GitHubService
 {
-  public static async Task<List<Verse>> LoadKjvBibleBookJson(string? downloadUrl, string? fileName)
+  public static async Task<List<Verse>> LoadKjvBibleBookJson(string? downloadUrl, string? fileName, bool isForModernTranslation = false)
   {
+    string version = isForModernTranslation ? "AI" : "KJV";
+
     if (string.IsNullOrEmpty(downloadUrl) || string.IsNullOrEmpty(fileName))
     {
       throw new ArgumentException($"{nameof(GitHubService)}.{LoadKjvBibleBookJson}: Download URL or file name is null or empty.");
@@ -36,9 +38,9 @@ public partial class GitHubService
 
         var verse = new Verse
         {
-          id = $"{book.book}:{chapter.chapter}:{verseRaw.verse}:KJV",
+          id = $"{book.book}:{chapter.chapter}:{verseRaw.verse}:{version}",
           verseId = $"{book.book}:{chapter.chapter}:{verseRaw.verse}",
-          version = "KJV",
+          version = version,
           collection = book.book,
           book = book.book,
           chapter = chapterNum,
