@@ -10,7 +10,7 @@ if (args.Length == 0)
 switch (args[0].ToLower())
 {
   case "kjv":
-    await ScrapeKJV();
+    await KJV();
     break;
 
   default:
@@ -18,7 +18,7 @@ switch (args[0].ToLower())
     break;
 }
 
-static async Task ScrapeKJV()
+static async Task KJV()
 {
   // Fetch list of book JSON files from GitHub repo aruljohn/Bible-kjv (while excluding Books.json)
   List<GitHubFileRef> githubFileList = await GitHubService.FetchGitHubFileListAsync("aruljohn/Bible-kjv", [".json"], ["Books.json"]);
