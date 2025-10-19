@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
-using ScripturAI;
+using ScripturAI.Models;
+using ScripturAI.Services;
 
 if (args.Length == 0)
 {
@@ -75,7 +76,7 @@ static async Task KJV()
     for (int i = 0; i < bookVerses.Count; i += batchSize)
     {
       var batch = bookVerses.GetRange(i, Math.Min(batchSize, bookVerses.Count - i));
-      bool batchSuccess = await RetryAsync(() => OpenAIService.ProcessBatchEmbeddings(batch), maxRetries);
+      bool batchSuccess = await RetryAsync(() => AiService.ProcessBatchEmbeddings(batch), maxRetries);
       if (!batchSuccess)
       {
         Console.WriteLine($"Failed to process batch starting at index {i} for {bookName} after {maxRetries} retries.");

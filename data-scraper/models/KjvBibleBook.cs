@@ -1,4 +1,4 @@
-namespace ScripturAI;
+namespace ScripturAI.Models;
 
 public class KjvBibleBook
 {
