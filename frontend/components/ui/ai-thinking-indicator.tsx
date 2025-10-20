@@ -1,11 +1,10 @@
 import { AudioPlayer, createAudioPlayer } from "expo-audio";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, View } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { ThemedText } from "../themed-text";
 
-import { UserPreferences } from "@/constants/user-preferences";
+import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
 
 const SYMBOLS = ["α", "β", "λ", "ϕ", "∑", "Ω", "∞", "Ψ", "π", "Δ", "∂", "µ", "ξ", "χ", "Θ", "γ", "ζ", "ρ", "η", "σ"];
 const COLORS = ["#1E3A5F", "#2E5A7F", "#3B6B99", "#1A4566", "#2C5C80"];
@@ -16,6 +15,7 @@ export default function AiThinkingIndicator() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const soundRef = useRef<AudioPlayer | null>(null);
+  const { allowThinkingSound } = useAppPreferences();
 
   // 🌀 Animated symbol flow
   useEffect(() => {
@@ -83,8 +83,7 @@ export default function AiThinkingIndicator() {
 
     const loadSound = async () => {
       try {
-        const allowSound = await AsyncStorage.getItem(UserPreferences.ai_thinking_sound);
-        if ((allowSound ?? "true") === "true") {
+        if (allowThinkingSound) {
           // Create and load sound
           player = createAudioPlayer();
           player.replace(require("../../assets/ai-thinking.mp3"));

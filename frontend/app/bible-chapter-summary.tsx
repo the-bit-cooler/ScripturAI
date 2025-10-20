@@ -10,10 +10,8 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 
 import { shareMarkdownAsPdf } from "@/utilities/share-markdown-as-pdf";
 
+import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
 import { useThemeColor } from '@/hooks/use-theme-color';
-
-import { AiModes } from '@/constants/ai-modes';
-import { UserPreferences } from "@/constants/user-preferences";
 
 type BibleChapterSummaryParams = {
   version: string;
@@ -23,8 +21,8 @@ type BibleChapterSummaryParams = {
 
 export default function BibleChapterSummary({ version, book, chapter }: BibleChapterSummaryParams) {
   const [summary, setSummary] = useState<string | null>(null);
-  const [mode, setMode] = useState<string | null>(null); // ✅ null means "not loaded yet"
   const [loading, setLoading] = useState(true);
+  const { aiMode } = useAppPreferences();
 
   // ✅ use theme defaults
   const headerBackgroundColor = useThemeColor({}, 'cardBackground');
@@ -32,22 +30,10 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
   const markdownBackgroundColor = useThemeColor({}, 'cardBackground');
   const markdownTextColor = useThemeColor({}, 'text');
 
-  useEffect(() => {
-    const loadModePreference = async () => {
-      try {
-        const storedMode = await AsyncStorage.getItem(UserPreferences.ai_mode);
-        setMode(storedMode || AiModes.devotional); // set default if nothing stored
-      } catch {
-        setMode(AiModes.devotional);
-      }
-    };
-    loadModePreference();
-  });
-
   const fetchBibleChapterSummary = useCallback(async (cacheKey: string) => {
-    if (!mode) return; // wait until mode is loaded
+    if (!aiMode) return; // wait until mode is loaded
     try {
-      const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/summarize/${mode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
+      const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/summarize/${aiMode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch a summary for ${version}:${book}:${chapter}.`);
 
@@ -56,11 +42,11 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
       setLoading(false);
       await AsyncStorage.setItem(cacheKey, result);
     } catch { }
-  }, [version, book, chapter, mode]);
+  }, [version, book, chapter, aiMode]);
 
   useEffect(() => {
     const loadSummary = async () => {
-      const cacheKey = `${version}:${book}:${chapter}:Summary:${mode}`;
+      const cacheKey = `${version}:${book}:${chapter}:Summary:${aiMode}`;
       const cached = await AsyncStorage.getItem(cacheKey);
       if (cached) {
         setSummary(cached);
@@ -72,11 +58,11 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
     };
 
     loadSummary();
-  }, [fetchBibleChapterSummary, version, book, chapter, mode]);
+  }, [fetchBibleChapterSummary, version, book, chapter, aiMode]);
 
   const sharePdf = async () => {
     if (summary)
-      await shareMarkdownAsPdf(summary, `${book} ${chapter} (${version})`, mode!);
+      await shareMarkdownAsPdf(summary, `${book} ${chapter} (${version})`, aiMode);
   };
 
   return (

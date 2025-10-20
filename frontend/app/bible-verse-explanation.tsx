@@ -11,13 +11,11 @@ import { ThemedText } from '@/components/themed-text';
 import AiThinkingIndicator from '@/components/ui/ai-thinking-indicator';
 import { IconSymbol } from "@/components/ui/icon-symbol";
 
+import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 import { shareMarkdownAsPdf } from "@/utilities/share-markdown-as-pdf";
 import { getBibleVersionDisplayName } from "@/utilities/get-bible-version-display-name";
-
-import { AiModes } from '@/constants/ai-modes';
-import { UserPreferences } from "@/constants/user-preferences";
 
 type BibleVerseExplanationRouteParams = {
   version: string;
@@ -30,8 +28,8 @@ type BibleVerseExplanationRouteParams = {
 export default function BibleVerseExplanation() {
   const { version, book, chapter, verse, text } = useLocalSearchParams<BibleVerseExplanationRouteParams>();
   const [explanation, setExplanation] = useState<string | null>(null);
-  const [mode, setMode] = useState<string | null>(null); // ✅ null means "not loaded yet"
   const [loading, setLoading] = useState(true);
+  const { aiMode } = useAppPreferences();
 
   // ✅ use theme defaults
   const headerBackgroundColor = useThemeColor({}, 'cardBackground');
@@ -39,22 +37,10 @@ export default function BibleVerseExplanation() {
   const markdownBackgroundColor = useThemeColor({}, 'cardBackground');
   const markdownTextColor = useThemeColor({}, 'text');
 
-  useEffect(() => {
-    const loadModePreference = async () => {
-      try {
-        const storedMode = await AsyncStorage.getItem(UserPreferences.ai_mode);
-        setMode(storedMode || AiModes.devotional); // set default if nothing stored
-      } catch {
-        setMode(AiModes.devotional);
-      }
-    };
-    loadModePreference();
-  });
-
   const fetchBibleVerseExplanation = useCallback(async (cacheKey: string) => {
-    if (!mode) return; // wait until mode is loaded
+    if (!aiMode) return; // wait until mode is loaded
     try {
-      const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/${verse}/explain/${mode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
+      const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/${verse}/explain/${aiMode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch any insight for ${version}:${book}:${chapter}:${verse}.`);
 
@@ -63,11 +49,11 @@ export default function BibleVerseExplanation() {
       setLoading(false);
       await AsyncStorage.setItem(cacheKey, result);
     } catch { }
-  }, [version, book, chapter, verse, mode]);
+  }, [version, book, chapter, verse, aiMode]);
 
   useEffect(() => {
     const loadExplanation = async () => {
-      const cacheKey = `${version}:${book}:${chapter}:${verse}:Explanation:${mode}`;
+      const cacheKey = `${version}:${book}:${chapter}:${verse}:Explanation:${aiMode}`;
       const cached = await AsyncStorage.getItem(cacheKey);
       if (cached) {
         setExplanation(cached);
@@ -79,11 +65,11 @@ export default function BibleVerseExplanation() {
     };
 
     loadExplanation();
-  }, [fetchBibleVerseExplanation, version, book, chapter, verse, mode]);
+  }, [fetchBibleVerseExplanation, version, book, chapter, verse, aiMode]);
 
   const sharePdf = async () => {
     if (explanation)
-      await shareMarkdownAsPdf(explanation, `${book} ${chapter}:${verse} (${version})`, mode!);
+      await shareMarkdownAsPdf(explanation, `${book} ${chapter}:${verse} (${version})`, aiMode);
   };
 
   return (

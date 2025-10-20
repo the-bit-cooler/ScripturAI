@@ -2,19 +2,17 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import AiThinkingIndicator from '@/components/ui/ai-thinking-indicator';
 
+import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 import { getBibleVersionDisplayName } from "@/utilities/get-bible-version-display-name";
 
 import { Verse } from "@/types/verse";
-import { UserPreferences } from "@/constants/user-preferences";
-import { AiModes } from '@/constants/ai-modes';
 
 type SimilarBibleVerseRouteParams = {
   version: string;
@@ -27,35 +25,23 @@ type SimilarBibleVerseRouteParams = {
 export default function SimilarBibleVerses() {
   const { version, book, chapter, verse, text } = useLocalSearchParams<SimilarBibleVerseRouteParams>();
   const [verses, setVerses] = useState<Verse[]>([]);
-  const [mode, setMode] = useState<string | null>(null); // ✅ null means "not loaded yet"
   const [loading, setLoading] = useState(true);
+  const { aiMode } = useAppPreferences();
 
   // ✅ use theme defaults
   const headerBackgroundColor = useThemeColor({}, 'cardBackground');
 
-  useEffect(() => {
-    const loadModePreference = async () => {
-      try {
-        const storedMode = await AsyncStorage.getItem(UserPreferences.ai_mode);
-        setMode(storedMode || AiModes.devotional); // set default if nothing stored
-      } catch {
-        setMode(AiModes.devotional);
-      }
-    };
-    loadModePreference();
-  });
-
   const fetchSimilarBibleVerses = useCallback(async () => {
-    if (!mode) return; // wait until mode is loaded
+    if (!aiMode) return; // wait until mode is loaded
     try {
-      const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/${verse}/similar/${mode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
+      const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/${verse}/similar/${aiMode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch similar verses for ${version}:${book}:${chapter}:${verse}.`);
 
       setVerses(await response.json());
       setLoading(false);
     } catch { }
-  }, [version, book, chapter, verse, mode]);
+  }, [version, book, chapter, verse, aiMode]);
 
   useEffect(() => {
     fetchSimilarBibleVerses();
