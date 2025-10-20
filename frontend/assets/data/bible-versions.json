@@ -1,18 +1,70 @@
 {
-  "ASV": "American Standard Version",
-  "CEV": "Contemporary English Version",
-  "COVERDALE": "Coverdale Bible",
-  "ESV": "English Standard Version",
-  "GEN": "Geneva Bible",
-  "GNT": "Good News Translation",
-  "KJV": "King James Version",
-  "MSG": "The Message",
-  "NASB": "New American Standard Bible",
-  "NIV": "New International Version",
-  "NKJV": "New King James Version",
-  "NLT": "New Living Translation",
-  "RSV": "Revised Standard Version",
-  "TYNDALE": "Tyndale Bible",
-  "WYC": "Wycliffe Bible",
-  "YLT": "Young's Literal Translation"
+  "AI": {
+    "fullname": "Modern AI Translation",
+    "supported": true
+  },
+  "ASV": {
+    "fullname": "American Standard Version",
+    "supported": false
+  },
+  "CEV": {
+    "fullname": "Contemporary English Version",
+    "supported": false
+  },
+  "COVERDALE": {
+    "fullname": "Coverdale Bible",
+    "supported": false
+  },
+  "ESV": {
+    "fullname": "English Standard Version",
+    "supported": false
+  },
+  "GEN": {
+    "fullname": "Geneva Bible",
+    "supported": false
+  },
+  "GNT": {
+    "fullname": "Good News Translation",
+    "supported": false
+  },
+  "KJV": {
+    "fullname": "King James Version",
+    "supported": true
+  },
+  "MSG": {
+    "fullname": "The Message",
+    "supported": false
+  },
+  "NASB": {
+    "fullname": "New American Standard Bible",
+    "supported": false
+  },
+  "NIV": {
+    "fullname": "New International Version",
+    "supported": false
+  },
+  "NKJV": {
+    "fullname": "New King James Version",
+    "supported": false
+  },
+  "NLT": {
+    "fullname": "New Living Translation",
+    "supported": false
+  },
+  "RSV": {
+    "fullname": "Revised Standard Version",
+    "supported": false
+  },
+  "TYNDALE": {
+    "fullname": "Tyndale Bible",
+    "supported": false
+  },
+  "WYC": {
+    "fullname": "Wycliffe Bible",
+    "supported": false
+  },
+  "YLT": {
+    "fullname": "Young's Literal Translation",
+    "supported": false
+  }
 }

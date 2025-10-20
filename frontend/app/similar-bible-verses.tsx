@@ -10,7 +10,7 @@ import AiThinkingIndicator from '@/components/ui/ai-thinking-indicator';
 import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
 import { useThemeColor } from '@/hooks/use-theme-color';
 
-import { getBibleVersionDisplayName } from "@/utilities/get-bible-version-display-name";
+import { getBibleVersionDisplayName } from "@/utilities/get-bible-version-info";
 
 import { Verse } from "@/types/verse";
 

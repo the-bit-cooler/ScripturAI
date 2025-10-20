@@ -1,9 +1,9 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { PlatformPressable } from '@react-navigation/elements';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { PlatformPressable } from '@react-navigation/elements';
 import Markdown from 'react-native-markdown-display';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
@@ -14,8 +14,8 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
 import { useThemeColor } from '@/hooks/use-theme-color';
 
+import { getBibleVersionDisplayName } from "@/utilities/get-bible-version-info";
 import { shareMarkdownAsPdf } from "@/utilities/share-markdown-as-pdf";
-import { getBibleVersionDisplayName } from "@/utilities/get-bible-version-display-name";
 
 type BibleVerseExplanationRouteParams = {
   version: string;

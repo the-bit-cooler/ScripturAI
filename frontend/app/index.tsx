@@ -16,6 +16,7 @@ import BibleChapterSummary from "./bible-chapter-summary";
 import { getBibleBookChapterCount } from "@/utilities/get-bible-book-chapter-count";
 import { getBibleBookList } from "@/utilities/get-bible-book-list";
 
+import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useVerseContextMenu } from "@/hooks/use-verse-context-menu";
 
@@ -34,6 +35,7 @@ export default function BibleBookReader() {
   const [loading, setLoading] = useState(true);
   const [readingLocation, setReadingLocation] = useState<ReadingLocation | null>(null);
   const [showReadingLocationPickerModal, setShowReadingLocationPickerModal] = useState(false);
+  const { version } = useAppPreferences();
 
   const isInitialMount = useRef(true);
   const router = useRouter();
@@ -41,34 +43,30 @@ export default function BibleBookReader() {
   const modalBackgroundColor = useThemeColor({}, "cardBackground");
   const modalPickerColor = useThemeColor({}, "text");
 
-  // Load user's preferences 
+  // Load user's reading location
   useEffect(() => {
-    const loadUserPreferences = async () => {
-      const defaultVersion = 'KJV';
+    const loadReadingLocation = async () => {
       const defaultBibleBook = 'John';
       const defaultBibleChapter = 1;
       const defaultReaderPage = 0;
       try {
         const savedReadingLocation = await AsyncStorage.getItem(UserPreferences.saved_reading_location);
         if (savedReadingLocation) {
-          setReadingLocation(JSON.parse(savedReadingLocation) as ReadingLocation)
+          const readingLocation = JSON.parse(savedReadingLocation) as ReadingLocation;
+          readingLocation.version = version;
+          setReadingLocation(readingLocation);
         } else {
-          let version = defaultVersion;
-          const storedVersion = await AsyncStorage.getItem(UserPreferences.bible_version);
-          if (storedVersion) {
-            version = storedVersion;
-          }
           setReadingLocation({ version, book: defaultBibleBook, chapter: defaultBibleChapter, page: defaultReaderPage });
         }
       } catch {
-        setReadingLocation({ version: defaultVersion, book: defaultBibleBook, chapter: defaultBibleChapter, page: defaultReaderPage });
+        setReadingLocation({ version, book: defaultBibleBook, chapter: defaultBibleChapter, page: defaultReaderPage });
       } finally {
         setLoading(false);
       }
     };
 
-    loadUserPreferences();
-  }, []);
+    loadReadingLocation();
+  }, [version]);
 
   // Save user's reading location
   useEffect(() => {

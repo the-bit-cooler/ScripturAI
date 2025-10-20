@@ -14,6 +14,7 @@ import { AiModeValues } from "@/constants/ai-modes";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { HorizontalThemedSeparator } from "@/components/ui/themed-separator";
+import { getSupportedBibleVersions } from "@/utilities/get-bible-version-info";
 
 export default function SettingsScreen() {
   const { theme, setTheme } = useAppTheme();
@@ -66,6 +67,11 @@ export default function SettingsScreen() {
           headerColor={textColor}
           pickerColor={textColor}
         />
+        <HorizontalThemedSeparator marginVertical={0} />
+        <VersionSection
+          headerColor={textColor}
+          pickerColor={textColor}
+        />
         <HorizontalThemedSeparator />
         <View style={{ marginTop: 10 }}>
           <Button title="Clear App Data" color={Colors.error.text} onPress={clearStorage} />
@@ -91,12 +97,12 @@ const AppearanceSection = ({ appTheme, headerColor, pickerColor, setAppTheme }: 
 
   return (
     <View>
-      <ThemedText type="subtitle" style={{ color: headerColor }}>
+      <ThemedText type="subtitle" style={{ color: headerColor, width: '100%', zIndex: 99999 }}>
         Appearance
       </ThemedText>
       <Picker
         selectedValue={appTheme}
-        style={{ marginVertical: -10 }}
+        style={{ marginTop: -10, marginHorizontal: 20 }}
         itemStyle={{ borderRadius: 200, color: pickerColor, backgroundColor: 'transparent', fontWeight: 'bold' }}
         onValueChange={(theme) => setAppTheme(theme)}
       >
@@ -121,13 +127,13 @@ const AiModeSection = ({ headerColor, pickerColor }: AiModeSectionProps) => {
   return (
     <>
       <View style={{ marginTop: 20 }}>
-        <ThemedText type="subtitle" style={{ color: headerColor, marginBottom: 0 }}>
+        <ThemedText type="subtitle" style={{ color: headerColor, marginBottom: 0, width: '100%', zIndex: 99999 }}>
           AI Mode
         </ThemedText>
         <Picker
           selectedValue={aiMode}
           onValueChange={(mode) => setAiMode(mode)}
-          style={{ marginTop: -40 }}
+          style={{ marginTop: -40, marginHorizontal: 20 }}
           itemStyle={{ borderRadius: 200, color: pickerColor, backgroundColor: 'transparent', fontWeight: 'bold' }}
         >
           {AiModeValues.map((option) => {
@@ -145,6 +151,35 @@ const AiModeSection = ({ headerColor, pickerColor }: AiModeSectionProps) => {
         />
       </View>
     </>
+  );
+};
+
+type VersionSectionProps = {
+  headerColor: string;
+  pickerColor: string;
+}
+
+const VersionSection = ({ headerColor, pickerColor }: VersionSectionProps) => {
+  const { version, setVersion } = useAppPreferences();
+
+  return (
+    <View style={{ marginTop: 20 }}>
+      <ThemedText type="subtitle" style={{ color: headerColor }}>
+        Bible Version
+      </ThemedText>
+      <Picker
+        selectedValue={version}
+        style={{ marginVertical: -10, marginHorizontal: 20 }}
+        itemStyle={{ borderRadius: 200, color: pickerColor, backgroundColor: 'transparent', fontWeight: 'bold', width: '100%', zIndex: 99999 }}
+        onValueChange={(version) => setVersion(version)}
+      >
+        {getSupportedBibleVersions().map((version) => {
+          return (
+            <Picker.Item key={version.key} label={version.fullname} value={version.key} />
+          );
+        })}
+      </Picker>
+    </View>
   );
 };
 

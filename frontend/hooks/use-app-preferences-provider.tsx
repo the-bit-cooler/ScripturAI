@@ -9,18 +9,23 @@ type AppPreferencesContextType = {
   setAiMode: (mode: string) => Promise<void>;
   allowThinkingSound: boolean;
   setAllowThinkingSound: (value: boolean) => Promise<void>;
+  version: string;
+  setVersion: (version: string) => Promise<void>;
 };
 
 const AppPreferencesContext = createContext<AppPreferencesContextType>({
-  aiMode: AiModes.devotional,
+  aiMode: AiModes.devotional, // default
   setAiMode: async () => { },
-  allowThinkingSound: true,
+  allowThinkingSound: true, // default
   setAllowThinkingSound: async () => { },
+  version: 'KJV', // default
+  setVersion: async () => { },
 });
 
 export function AppPreferencesProvider({ children }: { children: React.ReactNode }) {
-  const [aiMode, setAiModeState] = useState(AiModes.devotional);
-  const [allowThinkingSound, setAllowThinkingSoundState] = useState(true);
+  const [aiMode, setAiModeState] = useState(AiModes.devotional);  // default
+  const [allowThinkingSound, setAllowThinkingSoundState] = useState(true);  // default
+  const [version, setVersionState] = useState('KJV');  // default
 
   useEffect(() => {
     (async () => {
@@ -36,6 +41,13 @@ export function AppPreferencesProvider({ children }: { children: React.ReactNode
     })();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      const stored = await AsyncStorage.getItem(UserPreferences.bible_version);
+      if (stored) setVersionState(stored);
+    })();
+  }, []);
+
   const setAiMode = async (mode: string) => {
     setAiModeState(mode); // updates immediately
     await AsyncStorage.setItem(UserPreferences.ai_mode, mode);
@@ -46,8 +58,13 @@ export function AppPreferencesProvider({ children }: { children: React.ReactNode
     await AsyncStorage.setItem(UserPreferences.ai_thinking_sound, value ? "true" : "false");
   };
 
+  const setVersion = async (version: string) => {
+    setVersionState(version); // updates immediately
+    await AsyncStorage.setItem(UserPreferences.bible_version, version);
+  };
+
   return (
-    <AppPreferencesContext.Provider value={{ aiMode, setAiMode, allowThinkingSound, setAllowThinkingSound }}>
+    <AppPreferencesContext.Provider value={{ aiMode, setAiMode, allowThinkingSound, setAllowThinkingSound, version, setVersion }}>
       {children}
     </AppPreferencesContext.Provider>
   );
