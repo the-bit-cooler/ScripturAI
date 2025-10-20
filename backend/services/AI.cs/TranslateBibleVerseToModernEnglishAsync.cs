@@ -64,7 +64,16 @@ public partial class AiService
         attempt++;
       }
 
-      if (!string.IsNullOrWhiteSpace(chat))
+      if (string.IsNullOrWhiteSpace(chat))
+      {
+        // fetch modern AI translation from database
+        var modernTranslationVersion = await dataService.GetBibleVerseAsync(documentId.Replace(version, "AI"), book, callerId);
+        if (modernTranslationVersion != null)
+        {
+          chat = modernTranslationVersion.text;
+        }
+      }
+      else
       {
         // cache the translation
         await dataService.CacheItemAsync(new ChatCompletionCacheEntry(cacheId, cachePartitionKey, chat), cachePartitionKey, cacheDescription, callerId);
