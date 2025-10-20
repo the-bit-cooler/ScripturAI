@@ -1,6 +1,7 @@
 {
   "scripts": {
     "scrape:kjv": "dotnet run -- kjv",
-    "scrape:modern": "dotnet run -- modern"
+    "scrape:modern": "dotnet run -- modern",
+    "resubmit": "dotnet run -- failed"
   }
 }

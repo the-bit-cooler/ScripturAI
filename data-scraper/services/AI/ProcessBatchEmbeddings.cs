@@ -4,23 +4,34 @@ namespace ScripturAI.Services;
 
 public partial class AiService
 {
-  internal static async Task ProcessBatchEmbeddings(List<Verse> batch)
+  internal static async Task ProcessBatchEmbeddingsAsync(List<Verse> batch)
   {
-    // Generate embeddings
-    var texts = batch.ConvertAll(v => v.text);
+    // 🧹 Remove any verses that failed translation
+    var validBatch = batch
+      .Where(v => !string.IsNullOrWhiteSpace(v.text))
+      .ToList();
+    
+    if (validBatch.Count == 0)
+    {
+      Console.WriteLine("Skipping embedding: all verses in this batch are empty.");
+      return;
+    }
+    
+    // 🧠 Generate embeddings for valid verses only
+    var texts = validBatch.ConvertAll(v => v.text);
     var embeddingsResponse = await GetEmbeddingClient().GenerateEmbeddingsAsync(texts);
     var embeddings = embeddingsResponse.Value;
 
-    for (int j = 0; j < batch.Count; j++)
+    for (int j = 0; j < validBatch.Count; j++)
     {
       if (embeddings[j] != null)
       {
-        batch[j].vector = embeddings[j].ToFloats().ToArray();
+        validBatch[j].vector = embeddings[j].ToFloats().ToArray();
       }
     }
 
-    // Upsert to Cosmos DB
-    foreach (var verse in batch)
+    // ☁️ Upsert only valid verses to Cosmos DB
+    foreach (var verse in validBatch)
     {
       await DataService.UpsertVerseAsync(verse);
     }

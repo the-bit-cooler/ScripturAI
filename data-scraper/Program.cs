@@ -18,6 +18,9 @@ switch (args[0].ToLower())
     await ModernTranslation();
     break;
 
+  case "failed":
+    await Resubmit();
+    break;
 
   default:
     Console.WriteLine($"Unknown commandline arg: {args[0]}");
@@ -81,7 +84,7 @@ static async Task KJV()
     for (int i = 0; i < bookVerses.Count; i += batchSize)
     {
       var batch = bookVerses.GetRange(i, Math.Min(batchSize, bookVerses.Count - i));
-      bool batchSuccess = await RetryAsync(() => AiService.ProcessBatchEmbeddings(batch), maxRetries);
+      bool batchSuccess = await RetryAsync(() => AiService.ProcessBatchEmbeddingsAsync(batch), maxRetries);
       if (!batchSuccess)
       {
         Console.WriteLine($"Failed to process batch starting at index {i} for {bookName} after {maxRetries} retries.");
@@ -122,6 +125,8 @@ static async Task ModernTranslation()
   // Load or initialize processed books tracker
   const string processedFilePath = "processed_modern_translation_books.json";
   List<string> processedBooks = LoadProcessedBooks(processedFilePath);
+  const string progressFilePath = "modern_translation_batch_progress.json";
+  Dictionary<string, BookProgress> bookProgress = LoadBookProgress(progressFilePath);
 
   // Process each file one by one
   const int maxRetries = 3;
@@ -151,42 +156,73 @@ static async Task ModernTranslation()
 
     if (!loadSuccess || bookVerses == null || bookVerses.Count == 0)
     {
-      Console.WriteLine($"Failed to load verses for {bookName} after {maxRetries} retries.");
+      Console.Error.WriteLine($"Failed to load verses for {bookName} after {maxRetries} retries.");
       continue;
     }
 
     // Process in batches with retry
     bool allBatchesSucceeded = true;
-    for (int i = 0; i < bookVerses.Count; i += batchSize)
+    int startIndex = 0;
+
+    if (bookProgress.TryGetValue(bookName, out var progress))
+    {
+      startIndex = progress.LastBatchStart + batchSize; // resume after last completed batch
+    }
+    
+    Console.WriteLine($"Starting to process {batchSize} batch from index {startIndex} for {bookName}.");
+
+    for (int i = startIndex; i < bookVerses.Count; i += batchSize)
     {
       var batch = bookVerses.GetRange(i, Math.Min(batchSize, bookVerses.Count - i));
-      bool batchSuccess = await RetryAsync(() => AiService.TranslateToModern(batch), maxRetries);
+      bool batchSuccess = await RetryAsync(() => AiService.TranslateToModernAsync(batch), maxRetries);
       if (!batchSuccess)
       {
-        Console.WriteLine($"Failed to translate batch starting at index {i} for {bookName} after {maxRetries} retries.");
+        Console.Error.WriteLine($"AiService.TranslateToModern: Failed to process {batchSize} batch from index {i} for {bookName} after {maxRetries} retries.");
         allBatchesSucceeded = false;
         break; // Stop processing this book to avoid partial uploads; manual intervention needed
       }
-      batchSuccess = await RetryAsync(() => AiService.ProcessBatchEmbeddings(batch), maxRetries);
+      batchSuccess = await RetryAsync(() => AiService.ProcessBatchEmbeddingsAsync(batch), maxRetries);
       if (!batchSuccess)
       {
-        Console.WriteLine($"Failed to process batch starting at index {i} for {bookName} after {maxRetries} retries.");
+        Console.Error.WriteLine($"AiService.ProcessBatchEmbeddings: Failed to process {batchSize} batch from index {i} for {bookName} after {maxRetries} retries.");
         allBatchesSucceeded = false;
         break; // Stop processing this book to avoid partial uploads; manual intervention needed
       }
+
+      Console.WriteLine($"Completed processing {batchSize} batch from index {i} for {bookName}.");
+
+      // ✅ Save progress after each successful batch
+      bookProgress[bookName] = new BookProgress { LastBatchStart = i };
+      SaveBookProgress(progressFilePath, bookProgress);
     }
 
     if (allBatchesSucceeded)
     {
       processedBooks.Add(bookName);
       SaveProcessedBooks(processedFilePath, processedBooks);
+
+      // ✅ Remove book from progress file (cleanup)
+      if (bookProgress.ContainsKey(bookName))
+      {
+        bookProgress.Remove(bookName);
+        SaveBookProgress(progressFilePath, bookProgress);
+      }
+
       Console.WriteLine($"Completed processing {bookName}.");
+
+      // ✅ Eject after a book finishes as this process can take an hour or longer per book
+      return;
     }
     else
     {
-      Console.WriteLine($"Partial failure in {bookName}; not marking as processed.");
+      Console.Error.WriteLine($"Partial failure in {bookName}; not marking as processed.");
     }
   }
+}
+
+static async Task Resubmit()
+{
+  await AiService.ProcessFailedTranslationsAsync();
 }
 
 static List<string> LoadProcessedBooks(string filePath)
@@ -216,6 +252,37 @@ static void SaveProcessedBooks(string filePath, List<string> processedBooks)
   catch (Exception ex)
   {
     Console.WriteLine($"Error saving processed books: {ex.Message}.");
+  }
+}
+
+static Dictionary<string, BookProgress> LoadBookProgress(string filePath)
+{
+  if (File.Exists(filePath))
+  {
+    try
+    {
+      string json = File.ReadAllText(filePath);
+      return JsonSerializer.Deserialize<Dictionary<string, BookProgress>>(json)
+        ?? new Dictionary<string, BookProgress>();
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"Error loading book progress: {ex.Message}. Starting fresh.");
+    }
+  }
+  return new Dictionary<string, BookProgress>();
+}
+
+static void SaveBookProgress(string filePath, Dictionary<string, BookProgress> progress)
+{
+  try
+  {
+    string json = JsonSerializer.Serialize(progress, new JsonSerializerOptions { WriteIndented = true });
+    File.WriteAllText(filePath, json);
+  }
+  catch (Exception ex)
+  {
+    Console.WriteLine($"Error saving book progress: {ex.Message}.");
   }
 }
 
