@@ -65,35 +65,28 @@ export default function SimilarBibleVerses() {
           </View>
         </>
       }>
-      <View style={styles.container}>
-        {loading || verses.length < 0
-          ? (
-            <AiThinkingIndicator />
-          ) : (
-            <FlatList
-              data={verses}
-              renderItem={({ item }: { item: Verse }) => (
-                <View style={styles.verseItem}>
-                  <ThemedText type="subtitle" style={styles.verseId}>
-                    {item.verseId}
-                  </ThemedText>
-                  <ThemedText style={styles.verseText}>
-                    {item.text}
-                  </ThemedText>
-                </View>
-              )}
-              keyExtractor={(item) => item.verseId}
-            />
-          )}
+      <View style={styles.verseItemContainer}>
+        {loading || verses.length < 0 &&
+          (<AiThinkingIndicator />)
+        }
+        {!loading &&
+          verses.map((verse) => (
+            <View style={styles.verseItem} key={verse.verseId}>
+              <ThemedText type="defaultSemiBold" style={styles.verseId}>
+                {verse.verseId}
+              </ThemedText>
+              <ThemedText style={styles.verseText}>
+                {verse.text}
+              </ThemedText>
+            </View>
+          ))
+        }
       </View>
     </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   verseHeaderContainer: {
     margin: 'auto',
     alignItems: 'center',
@@ -108,6 +101,9 @@ const styles = StyleSheet.create({
   versionHeaderText: {
     opacity: 0.8,
     textAlign: 'center',
+  },
+  verseItemContainer: {
+    flex: 1,
   },
   verseItem: {
     marginBottom: 15,

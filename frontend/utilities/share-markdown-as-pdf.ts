@@ -20,6 +20,7 @@ export async function shareMarkdownAsPdf(
             @page { margin: 40px; }
             body {
               font-family: -apple-system, Roboto, sans-serif;
+              font-size: 18px;
               color: #222;
               background-color: white;
               ine-height: 1.5;

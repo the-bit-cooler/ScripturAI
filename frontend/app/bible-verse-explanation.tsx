@@ -105,9 +105,9 @@ export default function BibleVerseExplanation() {
             <AiThinkingIndicator />
           ) : (
             <Markdown style={{
-              body: { color: markdownTextColor },
-              heading1: { color: markdownTextColor },
-              heading2: { color: markdownTextColor },
+              body: { color: markdownTextColor, fontSize: 18 },
+              heading1: { color: markdownTextColor, fontSize: 28 },
+              heading2: { color: markdownTextColor, fontSize: 22 },
               heading3: { color: markdownTextColor },
               blockquote: {
                 backgroundColor: markdownBackgroundColor,
