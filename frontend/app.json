@@ -1,20 +1,25 @@
 {
   "expo": {
-    "name": "ScripturAI",
-    "slug": "ScripturAI",
+    "name": "MAIV",
+    "slug": "maiv",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "scripturai",
+    "scheme": "maiv",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "platforms": [
       "ios",
       "android"
     ],
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0D1B2A"
+    },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.ScripturAI",
+      "bundleIdentifier": "com.scripturai.maiv",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -22,7 +27,7 @@
     "android": {
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.ScripturAI"
+      "package": "com.scripturai.maiv"
     },
     "plugins": [
       "expo-router",
