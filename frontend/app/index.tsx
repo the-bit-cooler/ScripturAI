@@ -15,14 +15,15 @@ import BibleChapterSummary from "./bible-chapter-summary";
 
 import { getBibleBookChapterCount } from "@/utilities/get-bible-book-chapter-count";
 import { getBibleBookList } from "@/utilities/get-bible-book-list";
+import { getSupportedBibleVersions } from "@/utilities/get-bible-version-info";
 
 import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useVerseContextMenu } from "@/hooks/use-verse-context-menu";
+import { useChapterPages } from "@/hooks/use-chapter-pages";
 
 import { Verse } from "@/types/verse";
 import { UserPreferences } from "@/constants/user-preferences";
-import { useChapterPages } from "@/hooks/use-chapter-pages";
 
 type ReadingLocation = {
   version: string;
@@ -35,7 +36,7 @@ export default function BibleBookReader() {
   const [loading, setLoading] = useState(true);
   const [readingLocation, setReadingLocation] = useState<ReadingLocation | null>(null);
   const [showReadingLocationPickerModal, setShowReadingLocationPickerModal] = useState(false);
-  const { version } = useAppPreferences();
+  const { version, setVersion } = useAppPreferences();
 
   const isInitialMount = useRef(true);
   const router = useRouter();
@@ -127,6 +128,18 @@ export default function BibleBookReader() {
           >
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
               <View style={{ padding: 16, width: '80%' }}>
+                <Picker
+                  style={{ opacity: .9 }}
+                  selectedValue={version}
+                  onValueChange={(version) => setVersion(version)}
+                  itemStyle={{ borderRadius: 200, color: modalPickerColor, backgroundColor: modalBackgroundColor, fontWeight: 'bold', marginBottom: 30 }}
+                >
+                  {getSupportedBibleVersions().map((version) => {
+                    return (
+                      <Picker.Item key={version.key} label={version.shortname} value={version.key} />
+                    );
+                  })}
+                </Picker>
                 <Picker
                   style={{ opacity: .9 }}
                   selectedValue={readingLocation.book}
