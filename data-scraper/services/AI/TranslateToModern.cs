@@ -63,7 +63,6 @@ public partial class AiService
       }
       catch (Exception ex)
       {
-        Console.Error.WriteLine(ex.Message);
         await LogFailedVerseAsync(verse, ex.Message);
         verse.text = string.Empty;
       }
