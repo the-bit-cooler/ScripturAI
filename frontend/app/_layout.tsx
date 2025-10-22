@@ -1,5 +1,5 @@
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
-import { Stack } from "expo-router";
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
 import { AppThemeProvider } from '@/hooks/use-app-theme-provider';
@@ -28,14 +28,14 @@ export default function RootLayout() {
               name="bible-verse-explanation"
               options={{
                 presentation: 'modal',
-                headerShown: false
+                headerShown: false,
               }}
             />
             <Stack.Screen
               name="similar-bible-verses"
               options={{
                 presentation: 'modal',
-                headerShown: false
+                headerShown: false,
               }}
             />
           </Stack>

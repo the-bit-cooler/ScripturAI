@@ -13,7 +13,11 @@ export function CenteredActivityIndicator({ size, color, hint }: CenteredActivit
   const activityColor = useThemeColor({}, 'tint');
   return (
     <View style={styles.activityIndicatorContainer}>
-      {hint && <ThemedText type='subtitle' style={{ marginBottom: 20 }}>{hint}</ThemedText>}
+      {hint && (
+        <ThemedText type="subtitle" style={{ marginBottom: 20 }}>
+          {hint}
+        </ThemedText>
+      )}
       <ActivityIndicator size={size} color={color ?? activityColor} />
     </View>
   );
@@ -22,7 +26,7 @@ export function CenteredActivityIndicator({ size, color, hint }: CenteredActivit
 const styles = StyleSheet.create({
   activityIndicatorContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

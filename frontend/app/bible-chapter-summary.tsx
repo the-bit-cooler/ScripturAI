@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { PlatformPressable } from '@react-navigation/elements';
@@ -8,9 +8,9 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 import AiThinkingIndicator from '@/components/ui/ai-thinking-indicator';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
-import { shareMarkdownAsPdf } from "@/utilities/share-markdown-as-pdf";
+import { shareMarkdownAsPdf } from '@/utilities/share-markdown-as-pdf';
 
-import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
+import { useAppPreferences } from '@/hooks/use-app-preferences-provider';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 type BibleChapterSummaryParams = {
@@ -30,19 +30,25 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
   const markdownBackgroundColor = useThemeColor({}, 'cardBackground');
   const markdownTextColor = useThemeColor({}, 'text');
 
-  const fetchBibleChapterSummary = useCallback(async (cacheKey: string) => {
-    if (!aiMode) return; // wait until mode is loaded
-    try {
-      const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/summarize/${aiMode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch a summary for ${version}:${book}:${chapter}.`);
+  const fetchBibleChapterSummary = useCallback(
+    async (cacheKey: string) => {
+      if (!aiMode) return; // wait until mode is loaded
+      try {
+        const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/summarize/${aiMode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
+        const response = await fetch(url);
+        if (!response.ok)
+          throw new Error(
+            `API Error ${response.status}: Failed to fetch a summary for ${version}:${book}:${chapter}.`,
+          );
 
-      const result = await response.text();
-      setSummary(result);
-      setLoading(false);
-      await AsyncStorage.setItem(cacheKey, result);
-    } catch { }
-  }, [version, book, chapter, aiMode]);
+        const result = await response.text();
+        setSummary(result);
+        setLoading(false);
+        await AsyncStorage.setItem(cacheKey, result);
+      } catch {}
+    },
+    [version, book, chapter, aiMode],
+  );
 
   useEffect(() => {
     const loadSummary = async () => {
@@ -61,13 +67,16 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
   }, [fetchBibleChapterSummary, version, book, chapter, aiMode]);
 
   const sharePdf = async () => {
-    if (summary)
-      await shareMarkdownAsPdf(summary, `${book} ${chapter} (${version})`, aiMode);
+    if (summary) await shareMarkdownAsPdf(summary, `${book} ${chapter} (${version})`, aiMode);
   };
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: headerBackgroundColor, dark: headerBackgroundColor, sepia: headerBackgroundColor }}
+      headerBackgroundColor={{
+        light: headerBackgroundColor,
+        dark: headerBackgroundColor,
+        sepia: headerBackgroundColor,
+      }}
       headerImage={
         <>
           <IconSymbol
@@ -78,21 +87,18 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
           />
           {/* ✅ Floating Share Button */}
           {summary && (
-            <PlatformPressable
-              onPress={sharePdf}
-              style={styles.fab}
-              pressOpacity={0.8}>
+            <PlatformPressable onPress={sharePdf} style={styles.fab} pressOpacity={0.8}>
               <IconSymbol size={34} name="square.and.arrow.up" color={iconColor} />
             </PlatformPressable>
           )}
         </>
       }>
       <View style={[styles.container]}>
-        {loading || !summary
-          ? (
-            <AiThinkingIndicator />
-          ) : (
-            <Markdown style={{
+        {loading || !summary ? (
+          <AiThinkingIndicator />
+        ) : (
+          <Markdown
+            style={{
               body: { color: markdownTextColor, fontSize: 18 },
               heading1: { color: markdownTextColor, fontSize: 28 },
               heading2: { color: markdownTextColor, fontSize: 22 },
@@ -123,9 +129,9 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
                 borderRadius: 8,
               },
             }}>
-              {summary}
-            </Markdown>
-          )}
+            {summary}
+          </Markdown>
+        )}
       </View>
     </ParallaxScrollView>
   );
@@ -133,7 +139,7 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
   headerImage: {
     color: '#808080',

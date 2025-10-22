@@ -1,4 +1,3 @@
-
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -7,12 +6,12 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import AiThinkingIndicator from '@/components/ui/ai-thinking-indicator';
 
-import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
+import { useAppPreferences } from '@/hooks/use-app-preferences-provider';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
-import { getBibleVersionDisplayName } from "@/utilities/get-bible-version-info";
+import { getBibleVersionDisplayName } from '@/utilities/get-bible-version-info';
 
-import { Verse } from "@/types/verse";
+import { Verse } from '@/types/verse';
 
 type SimilarBibleVerseRouteParams = {
   version: string;
@@ -23,7 +22,8 @@ type SimilarBibleVerseRouteParams = {
 };
 
 export default function SimilarBibleVerses() {
-  const { version, book, chapter, verse, text } = useLocalSearchParams<SimilarBibleVerseRouteParams>();
+  const { version, book, chapter, verse, text } =
+    useLocalSearchParams<SimilarBibleVerseRouteParams>();
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const { aiMode } = useAppPreferences();
@@ -36,11 +36,14 @@ export default function SimilarBibleVerses() {
     try {
       const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/${verse}/similar/${aiMode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
       const response = await fetch(url);
-      if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch similar verses for ${version}:${book}:${chapter}:${verse}.`);
+      if (!response.ok)
+        throw new Error(
+          `API Error ${response.status}: Failed to fetch similar verses for ${version}:${book}:${chapter}:${verse}.`,
+        );
 
       setVerses(await response.json());
       setLoading(false);
-    } catch { }
+    } catch {}
   }, [version, book, chapter, verse, aiMode]);
 
   useEffect(() => {
@@ -49,7 +52,11 @@ export default function SimilarBibleVerses() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: headerBackgroundColor, dark: headerBackgroundColor, sepia: headerBackgroundColor }}
+      headerBackgroundColor={{
+        light: headerBackgroundColor,
+        dark: headerBackgroundColor,
+        sepia: headerBackgroundColor,
+      }}
       headerImage={
         <>
           <View style={styles.verseHeaderContainer}>
@@ -66,21 +73,16 @@ export default function SimilarBibleVerses() {
         </>
       }>
       <View style={styles.verseItemContainer}>
-        {loading || verses.length < 0 &&
-          (<AiThinkingIndicator />)
-        }
+        {loading || (verses.length < 0 && <AiThinkingIndicator />)}
         {!loading &&
           verses.map((verse) => (
             <View style={styles.verseItem} key={verse.verseId}>
               <ThemedText type="defaultSemiBold" style={styles.verseId}>
                 {verse.verseId}
               </ThemedText>
-              <ThemedText style={styles.verseText}>
-                {verse.text}
-              </ThemedText>
+              <ThemedText style={styles.verseText}>{verse.text}</ThemedText>
             </View>
-          ))
-        }
+          ))}
       </View>
     </ParallaxScrollView>
   );

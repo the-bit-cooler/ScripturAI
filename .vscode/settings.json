@@ -1,13 +1,18 @@
 {
-    "azureFunctions.deploySubpath": "backend/bin/Release/net8.0/publish",
-    "azureFunctions.projectLanguage": "C#",
-    "azureFunctions.projectRuntime": "~4",
-    "debug.internalConsoleOptions": "neverOpen",
-    "azureFunctions.preDeployTask": "publish (functions)",
-    "editor.codeActionsOnSave": {
-        "source.fixAll": "explicit",
-        "source.organizeImports": "explicit",
-        "source.sortMembers": "explicit"
-    },
-    "postman.settings.dotenv-detection-notification-visibility": false
+  "azureFunctions.deploySubpath": "backend/bin/Release/net8.0/publish",
+  "azureFunctions.projectLanguage": "C#",
+  "azureFunctions.projectRuntime": "~4",
+  "debug.internalConsoleOptions": "neverOpen",
+  "azureFunctions.preDeployTask": "publish (functions)",
+  "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit",
+      "source.sortMembers": "explicit"
+  },
+  "postman.settings.dotenv-detection-notification-visibility": false,
+  "eslint.workingDirectories": [
+      { "directory": "./frontend", "changeProcessCWD": true }
+  ],
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "editor.formatOnSave": true
 }

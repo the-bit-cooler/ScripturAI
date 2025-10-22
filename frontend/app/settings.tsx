@@ -1,54 +1,60 @@
-
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Application from 'expo-application';
-import { Alert, Button, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Button,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
-import { AppTheme, useAppTheme } from "@/hooks/use-app-theme-provider";
-import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
-import { useThemeColor } from "@/hooks/use-theme-color";
+import { AppTheme, useAppTheme } from '@/hooks/use-app-theme-provider';
+import { useAppPreferences } from '@/hooks/use-app-preferences-provider';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
-import { Colors } from "@/constants/theme";
-import { AiModeValues } from "@/constants/ai-modes";
+import { Colors } from '@/constants/theme';
+import { AiModeValues } from '@/constants/ai-modes';
 
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
-import { HorizontalThemedSeparator } from "@/components/ui/themed-separator";
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { HorizontalThemedSeparator } from '@/components/ui/themed-separator';
 
 export default function SettingsScreen() {
   const { theme, setTheme } = useAppTheme();
-  const backgroundColor = useThemeColor({}, "cardBackground")
-  const textColor = useThemeColor({}, "text");
-  const tintColor = useThemeColor({}, "tint");
-
+  const backgroundColor = useThemeColor({}, 'cardBackground');
+  const textColor = useThemeColor({}, 'text');
+  const tintColor = useThemeColor({}, 'tint');
 
   const clearStorage = async () => {
     Alert.alert(
-      "Clear App Data",
-      "Are you sure you want to clear all app data? \n\n This will remove all downloaded bible books and other related content. \n\nThis will also reset your theme and other preferences.",
+      'Clear App Data',
+      'Are you sure you want to clear all app data? \n\n This will remove all downloaded bible books and other related content. \n\nThis will also reset your theme and other preferences.',
       [
-        { text: "Cancel", style: "cancel" },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: "Clear",
-          style: "destructive",
+          text: 'Clear',
+          style: 'destructive',
           onPress: async () => {
             try {
               await AsyncStorage.clear();
-              Alert.alert("Cleared", "All app data has been cleared.");
-              setTheme("system"); // reset theme to system default
+              Alert.alert('Cleared', 'All app data has been cleared.');
+              setTheme('system'); // reset theme to system default
             } catch (err) {
-              Alert.alert("Error", "Something went wrong! Pleas try again later.");
+              Alert.alert('Error', 'Something went wrong! Pleas try again later.');
               console.error('Error clearing app data: ', err);
             }
           },
         },
-      ]
+      ],
     );
   };
 
   const showAbout = () => {
     Alert.alert(
       `About ${Application.applicationName}`,
-      `App Version ${Application.nativeApplicationVersion}\nBuild Number ${Application.nativeBuildVersion}\n© 2025 The Bit Cooler\n\nIn ❤️❤️ memory of Charlie Kirk`
+      `App Version ${Application.nativeApplicationVersion}\nBuild Number ${Application.nativeBuildVersion}\n© 2025 The Bit Cooler\n\nIn ❤️❤️ memory of Charlie Kirk`,
     );
   };
 
@@ -63,16 +69,12 @@ export default function SettingsScreen() {
           setAppTheme={setTheme}
         />
         <HorizontalThemedSeparator />
-        <AiModeSection
-          headerColor={textColor}
-          optionColor={textColor}
-          selectedColor={tintColor}
-        />
+        <AiModeSection headerColor={textColor} optionColor={textColor} selectedColor={tintColor} />
         <HorizontalThemedSeparator />
-        <View style={{ marginTop: 10, alignSelf: "center", width: 200 }}>
+        <View style={{ marginTop: 10, alignSelf: 'center', width: 200 }}>
           <Button title="Clear App Data" color={Colors.error.text} onPress={clearStorage} />
         </View>
-        <View style={{ marginTop: 20, marginBottom: 30, alignSelf: "center", width: 200 }}>
+        <View style={{ marginTop: 20, marginBottom: 30, alignSelf: 'center', width: 200 }}>
           <Button title="About" onPress={showAbout} />
         </View>
       </ScrollView>
@@ -85,12 +87,18 @@ type AppearanceSectionProps = {
   headerColor: string;
   optionColor: string;
   selectedColor: string;
-  setAppTheme: (theme: AppTheme) => void
-}
+  setAppTheme: (theme: AppTheme) => void;
+};
 
-const AppearanceSection = ({ appTheme, headerColor, optionColor, selectedColor, setAppTheme }: AppearanceSectionProps) => {
-  const themeOptions = ["light", "dark", "sepia", "system"] as const;
-  const themeOptionLabels = ["Light Mode", "Dark Mode", "Reading Mode", "System Default"] as const;
+const AppearanceSection = ({
+  appTheme,
+  headerColor,
+  optionColor,
+  selectedColor,
+  setAppTheme,
+}: AppearanceSectionProps) => {
+  const themeOptions = ['light', 'dark', 'sepia', 'system'] as const;
+  const themeOptionLabels = ['Light Mode', 'Dark Mode', 'Reading Mode', 'System Default'] as const;
 
   return (
     <>
@@ -102,9 +110,11 @@ const AppearanceSection = ({ appTheme, headerColor, optionColor, selectedColor, 
         return (
           <TouchableOpacity
             key={option}
-            style={[styles.optionButton, { borderColor: isSelected ? selectedColor : "transparent" }]}
-            onPress={() => setAppTheme(option)}
-          >
+            style={[
+              styles.optionButton,
+              { borderColor: isSelected ? selectedColor : 'transparent' },
+            ]}
+            onPress={() => setAppTheme(option)}>
             <ThemedText style={{ color: isSelected ? selectedColor : optionColor }}>
               {themeOptionLabels[index]}
             </ThemedText>
@@ -119,7 +129,7 @@ type AiModeSectionProps = {
   headerColor: string;
   optionColor: string;
   selectedColor: string;
-}
+};
 
 const AiModeSection = ({ headerColor, optionColor, selectedColor }: AiModeSectionProps) => {
   const { aiMode, setAiMode, allowThinkingSound, setAllowThinkingSound } = useAppPreferences();
@@ -134,9 +144,11 @@ const AiModeSection = ({ headerColor, optionColor, selectedColor }: AiModeSectio
         return (
           <TouchableOpacity
             key={option}
-            style={[styles.optionButton, { borderColor: isSelected ? selectedColor : "transparent" }]}
-            onPress={() => setAiMode(option)}
-          >
+            style={[
+              styles.optionButton,
+              { borderColor: isSelected ? selectedColor : 'transparent' },
+            ]}
+            onPress={() => setAiMode(option)}>
             <ThemedText style={{ color: isSelected ? selectedColor : optionColor }}>
               {option.charAt(0).toUpperCase() + option.slice(1)}
             </ThemedText>
@@ -163,7 +175,7 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 16,
   },
   optionButton: {
@@ -174,13 +186,13 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
   soundToggleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 20,
   },
   soundToggleLabel: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: '500',
   },
 });

@@ -1,8 +1,8 @@
-import { useThemeColor } from "@/hooks/use-theme-color";
-import { View } from "react-native";
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { View } from 'react-native';
 
-export function HorizontalThemedSeparator({marginVertical}: {marginVertical?: number}) {
-  const borderColor = useThemeColor({}, "border");
+export function HorizontalThemedSeparator({ marginVertical }: { marginVertical?: number }) {
+  const borderColor = useThemeColor({}, 'border');
   return (
     <View
       style={[
@@ -11,7 +11,7 @@ export function HorizontalThemedSeparator({marginVertical}: {marginVertical?: nu
           backgroundColor: borderColor + '80', // 50% opacity
           marginVertical: marginVertical ?? 10,
           borderRadius: 1,
-        }
+        },
       ]}
     />
   );

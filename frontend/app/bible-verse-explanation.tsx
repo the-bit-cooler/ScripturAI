@@ -1,5 +1,4 @@
-
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PlatformPressable } from '@react-navigation/elements';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -9,13 +8,13 @@ import Markdown from 'react-native-markdown-display';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import AiThinkingIndicator from '@/components/ui/ai-thinking-indicator';
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { IconSymbol } from '@/components/ui/icon-symbol';
 
-import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
+import { useAppPreferences } from '@/hooks/use-app-preferences-provider';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
-import { getBibleVersionDisplayName } from "@/utilities/get-bible-version-info";
-import { shareMarkdownAsPdf } from "@/utilities/share-markdown-as-pdf";
+import { getBibleVersionDisplayName } from '@/utilities/get-bible-version-info';
+import { shareMarkdownAsPdf } from '@/utilities/share-markdown-as-pdf';
 
 type BibleVerseExplanationRouteParams = {
   version: string;
@@ -26,7 +25,8 @@ type BibleVerseExplanationRouteParams = {
 };
 
 export default function BibleVerseExplanation() {
-  const { version, book, chapter, verse, text } = useLocalSearchParams<BibleVerseExplanationRouteParams>();
+  const { version, book, chapter, verse, text } =
+    useLocalSearchParams<BibleVerseExplanationRouteParams>();
   const [explanation, setExplanation] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { aiMode } = useAppPreferences();
@@ -37,19 +37,25 @@ export default function BibleVerseExplanation() {
   const markdownBackgroundColor = useThemeColor({}, 'cardBackground');
   const markdownTextColor = useThemeColor({}, 'text');
 
-  const fetchBibleVerseExplanation = useCallback(async (cacheKey: string) => {
-    if (!aiMode) return; // wait until mode is loaded
-    try {
-      const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/${verse}/explain/${aiMode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`API Error ${response.status}: Failed to fetch any insight for ${version}:${book}:${chapter}:${verse}.`);
+  const fetchBibleVerseExplanation = useCallback(
+    async (cacheKey: string) => {
+      if (!aiMode) return; // wait until mode is loaded
+      try {
+        const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/${verse}/explain/${aiMode}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
+        const response = await fetch(url);
+        if (!response.ok)
+          throw new Error(
+            `API Error ${response.status}: Failed to fetch any insight for ${version}:${book}:${chapter}:${verse}.`,
+          );
 
-      const result = await response.text();
-      setExplanation(result);
-      setLoading(false);
-      await AsyncStorage.setItem(cacheKey, result);
-    } catch { }
-  }, [version, book, chapter, verse, aiMode]);
+        const result = await response.text();
+        setExplanation(result);
+        setLoading(false);
+        await AsyncStorage.setItem(cacheKey, result);
+      } catch {}
+    },
+    [version, book, chapter, verse, aiMode],
+  );
 
   useEffect(() => {
     const loadExplanation = async () => {
@@ -74,7 +80,11 @@ export default function BibleVerseExplanation() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: headerBackgroundColor, dark: headerBackgroundColor, sepia: headerBackgroundColor }}
+      headerBackgroundColor={{
+        light: headerBackgroundColor,
+        dark: headerBackgroundColor,
+        sepia: headerBackgroundColor,
+      }}
       headerImage={
         <>
           <View style={styles.verseHeaderContainer}>
@@ -90,21 +100,18 @@ export default function BibleVerseExplanation() {
           </View>
           {/* ✅ Floating Share Button */}
           {explanation && (
-            <PlatformPressable
-              onPress={sharePdf}
-              style={styles.fab}
-              pressOpacity={0.8}>
+            <PlatformPressable onPress={sharePdf} style={styles.fab} pressOpacity={0.8}>
               <IconSymbol size={34} name="square.and.arrow.up" color={iconColor} />
             </PlatformPressable>
           )}
         </>
       }>
       <View style={styles.container}>
-        {loading || !explanation
-          ? (
-            <AiThinkingIndicator />
-          ) : (
-            <Markdown style={{
+        {loading || !explanation ? (
+          <AiThinkingIndicator />
+        ) : (
+          <Markdown
+            style={{
               body: { color: markdownTextColor, fontSize: 18 },
               heading1: { color: markdownTextColor, fontSize: 28 },
               heading2: { color: markdownTextColor, fontSize: 22 },
@@ -135,9 +142,9 @@ export default function BibleVerseExplanation() {
                 borderRadius: 8,
               },
             }}>
-              {explanation}
-            </Markdown>
-          )}
+            {explanation}
+          </Markdown>
+        )}
       </View>
     </ParallaxScrollView>
   );
@@ -145,7 +152,7 @@ export default function BibleVerseExplanation() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
   verseHeaderContainer: {
     margin: 'auto',

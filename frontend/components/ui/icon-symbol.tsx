@@ -21,10 +21,10 @@ const MAPPING = {
   'book.fill': 'menu-book',
   'gearshape.fill': 'settings',
   'heart.fill': 'favorite',
-  'magnifyingglass': 'search',
+  magnifyingglass: 'search',
   'lightbulb.fill': 'lightbulb',
   'list.bullet.rectangle': 'summarize',
-  'square.and.arrow.up': 'share'
+  'square.and.arrow.up': 'share',
 } as IconMapping;
 
 /**

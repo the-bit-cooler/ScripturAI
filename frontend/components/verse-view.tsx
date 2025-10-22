@@ -1,7 +1,7 @@
-import { View } from "react-native";
+import { View } from 'react-native';
 
-import { ThemedText } from "./themed-text";
-import { Verse } from "@/types/verse";
+import { ThemedText } from './themed-text';
+import { Verse } from '@/types/verse';
 
 type VerseViewProps = {
   verse: Verse;
@@ -11,10 +11,7 @@ type VerseViewProps = {
 export const VerseView = ({ verse, verseNumberColor }: VerseViewProps) => (
   <View style={{ marginVertical: 7, paddingHorizontal: 16 }}>
     <ThemedText type="subtitle">
-      <ThemedText
-        type="defaultSemiBold"
-        style={{ fontWeight: 'bold', color: verseNumberColor }}
-      >
+      <ThemedText type="defaultSemiBold" style={{ fontWeight: 'bold', color: verseNumberColor }}>
         {'     '}
         {verse.verse}
         {'   '}

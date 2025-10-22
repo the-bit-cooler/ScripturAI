@@ -1,29 +1,29 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 import { PlatformPressable } from '@react-navigation/elements';
-import { FlashList, FlashListRef } from "@shopify/flash-list";
-import { Stack, useRouter } from "expo-router";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { AppState, TouchableOpacity, View } from "react-native";
-import Modal from "react-native-modal";
-import PagerView from "react-native-pager-view";
+import { FlashList, FlashListRef } from '@shopify/flash-list';
+import { Stack, useRouter } from 'expo-router';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { AppState, TouchableOpacity, View } from 'react-native';
+import Modal from 'react-native-modal';
+import PagerView from 'react-native-pager-view';
 
-import { CenteredActivityIndicator } from "@/components/ui/centered-activity-indicator";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { VerseView } from "@/components/verse-view";
-import BibleChapterSummary from "./bible-chapter-summary";
+import { CenteredActivityIndicator } from '@/components/ui/centered-activity-indicator';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { VerseView } from '@/components/verse-view';
+import BibleChapterSummary from './bible-chapter-summary';
 
-import { getBibleBookChapterCount } from "@/utilities/get-bible-book-chapter-count";
-import { getBibleBookList } from "@/utilities/get-bible-book-list";
-import { getSupportedBibleVersions } from "@/utilities/get-bible-version-info";
+import { getBibleBookChapterCount } from '@/utilities/get-bible-book-chapter-count';
+import { getBibleBookList } from '@/utilities/get-bible-book-list';
+import { getSupportedBibleVersions } from '@/utilities/get-bible-version-info';
 
-import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
-import { useThemeColor } from "@/hooks/use-theme-color";
-import { useVerseContextMenu } from "@/hooks/use-verse-context-menu";
-import { useChapterPages } from "@/hooks/use-chapter-pages";
+import { useAppPreferences } from '@/hooks/use-app-preferences-provider';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useVerseContextMenu } from '@/hooks/use-verse-context-menu';
+import { useChapterPages } from '@/hooks/use-chapter-pages';
 
-import { Verse } from "@/types/verse";
-import { UserPreferences } from "@/constants/user-preferences";
+import { Verse } from '@/types/verse';
+import { UserPreferences } from '@/constants/user-preferences';
 
 type ReadingLocation = {
   version: string;
@@ -41,8 +41,8 @@ export default function BibleBookReader() {
   const isInitialMount = useRef(true);
   const router = useRouter();
 
-  const modalBackgroundColor = useThemeColor({}, "cardBackground");
-  const modalPickerColor = useThemeColor({}, "text");
+  const modalBackgroundColor = useThemeColor({}, 'cardBackground');
+  const modalPickerColor = useThemeColor({}, 'text');
 
   // Load user's reading location
   useEffect(() => {
@@ -51,16 +51,28 @@ export default function BibleBookReader() {
       const defaultBibleChapter = 1;
       const defaultReaderPage = 0;
       try {
-        const savedReadingLocation = await AsyncStorage.getItem(UserPreferences.saved_reading_location);
+        const savedReadingLocation = await AsyncStorage.getItem(
+          UserPreferences.saved_reading_location,
+        );
         if (savedReadingLocation) {
           const readingLocation = JSON.parse(savedReadingLocation) as ReadingLocation;
           readingLocation.version = version;
           setReadingLocation(readingLocation);
         } else {
-          setReadingLocation({ version, book: defaultBibleBook, chapter: defaultBibleChapter, page: defaultReaderPage });
+          setReadingLocation({
+            version,
+            book: defaultBibleBook,
+            chapter: defaultBibleChapter,
+            page: defaultReaderPage,
+          });
         }
       } catch {
-        setReadingLocation({ version, book: defaultBibleBook, chapter: defaultBibleChapter, page: defaultReaderPage });
+        setReadingLocation({
+          version,
+          book: defaultBibleBook,
+          chapter: defaultBibleChapter,
+          page: defaultReaderPage,
+        });
       } finally {
         setLoading(false);
       }
@@ -74,13 +86,16 @@ export default function BibleBookReader() {
     const saveReadingLocation = async () => {
       if (readingLocation && !isInitialMount.current) {
         try {
-          await AsyncStorage.setItem(UserPreferences.saved_reading_location, JSON.stringify(readingLocation));
-        } catch { }
+          await AsyncStorage.setItem(
+            UserPreferences.saved_reading_location,
+            JSON.stringify(readingLocation),
+          );
+        } catch {}
       }
     };
 
-    const subscription = AppState.addEventListener("change", (state) => {
-      if (state === "background") saveReadingLocation();  // Save when app is placed in background
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'background') saveReadingLocation(); // Save when app is placed in background
     });
 
     if (isInitialMount.current) {
@@ -94,7 +109,7 @@ export default function BibleBookReader() {
   }, [readingLocation]);
 
   const changeReadingLocation = useCallback((changed: Partial<ReadingLocation>) => {
-    setReadingLocation(prev => ({ ...prev!, ...changed }));
+    setReadingLocation((prev) => ({ ...prev!, ...changed }));
   }, []);
 
   return (
@@ -117,50 +132,70 @@ export default function BibleBookReader() {
             }}
           />
           <Modal
-            key='reading-location-picker-modal'
+            key="reading-location-picker-modal"
             isVisible={showReadingLocationPickerModal}
-            backdropOpacity={.05}
+            backdropOpacity={0.05}
             onBackdropPress={() => setShowReadingLocationPickerModal(false)}
             onSwipeComplete={() => setShowReadingLocationPickerModal(false)}
             swipeDirection={['left', 'right']}
             animationIn="slideInDown"
-            animationOut="slideOutUp"
-          >
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            animationOut="slideOutUp">
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
               <View style={{ padding: 16, width: '80%' }}>
                 <Picker
-                  style={{ opacity: .9 }}
+                  style={{ opacity: 0.9 }}
                   selectedValue={version}
                   onValueChange={(version) => setVersion(version)}
-                  itemStyle={{ borderRadius: 200, color: modalPickerColor, backgroundColor: modalBackgroundColor, fontWeight: 'bold', marginBottom: 30 }}
-                >
+                  itemStyle={{
+                    borderRadius: 200,
+                    color: modalPickerColor,
+                    backgroundColor: modalBackgroundColor,
+                    fontWeight: 'bold',
+                    marginBottom: 30,
+                  }}>
                   {getSupportedBibleVersions().map((version) => {
                     return (
-                      <Picker.Item key={version.key} label={version.shortname} value={version.key} />
+                      <Picker.Item
+                        key={version.key}
+                        label={version.shortname}
+                        value={version.key}
+                      />
                     );
                   })}
                 </Picker>
                 <Picker
-                  style={{ opacity: .9 }}
+                  style={{ opacity: 0.9 }}
                   selectedValue={readingLocation.book}
                   onValueChange={(bk) => {
                     changeReadingLocation({ ...readingLocation, book: bk, chapter: 1, page: 0 });
                   }}
-                  itemStyle={{ borderRadius: 200, color: modalPickerColor, backgroundColor: modalBackgroundColor, fontWeight: 'bold', marginBottom: 30 }}
-                >
+                  itemStyle={{
+                    borderRadius: 200,
+                    color: modalPickerColor,
+                    backgroundColor: modalBackgroundColor,
+                    fontWeight: 'bold',
+                    marginBottom: 30,
+                  }}>
                   {getBibleBookList().map((bk) => (
                     <Picker.Item key={bk} label={bk} value={bk} />
                   ))}
                 </Picker>
                 <Picker
-                  style={{ opacity: .9 }}
+                  style={{ opacity: 0.9 }}
                   selectedValue={readingLocation.chapter}
                   onValueChange={(ch) => {
                     changeReadingLocation({ ...readingLocation, chapter: ch, page: 0 });
                   }}
-                  itemStyle={{ borderRadius: 200, color: modalPickerColor, backgroundColor: modalBackgroundColor, fontWeight: 'bold' }}
-                >
-                  {Array.from({ length: getBibleBookChapterCount(readingLocation.book!) }, (_, i) => i + 1).map((ch) => (
+                  itemStyle={{
+                    borderRadius: 200,
+                    color: modalPickerColor,
+                    backgroundColor: modalBackgroundColor,
+                    fontWeight: 'bold',
+                  }}>
+                  {Array.from(
+                    { length: getBibleBookChapterCount(readingLocation.book!) },
+                    (_, i) => i + 1,
+                  ).map((ch) => (
                     <Picker.Item key={ch} label={`Chapter ${ch}`} value={ch} />
                   ))}
                 </Picker>
@@ -169,10 +204,8 @@ export default function BibleBookReader() {
           </Modal>
         </>
       )}
-      {(loading) && (
-        <CenteredActivityIndicator hint="Loading Book" size="large" />
-      )}
-      {(!loading && readingLocation) && (
+      {loading && <CenteredActivityIndicator hint="Loading Book" size="large" />}
+      {!loading && readingLocation && (
         <Pages
           key={`${readingLocation.version}-${readingLocation.book}`}
           readingLocation={readingLocation}
@@ -190,7 +223,11 @@ type PagesParams = {
 
 function Pages({ readingLocation, changeReadingLocation }: PagesParams) {
   const pagerRef = useRef<PagerView>(null);
-  const { loading, pages, measureView } = useChapterPages(readingLocation.version, readingLocation.book, readingLocation.chapter);
+  const { loading, pages, measureView } = useChapterPages(
+    readingLocation.version,
+    readingLocation.book,
+    readingLocation.chapter,
+  );
 
   const onContextMenu = useVerseContextMenu();
 
@@ -255,8 +292,7 @@ function Pages({ readingLocation, changeReadingLocation }: PagesParams) {
       }}
       onPageSelected={({ nativeEvent: { position } }) => {
         changeReadingLocation({ ...readingLocation, page: position });
-      }}
-    >
+      }}>
       <ChapterSummary
         key={`summary-${readingLocation.chapter}`}
         version={readingLocation.version}
@@ -276,7 +312,6 @@ function Pages({ readingLocation, changeReadingLocation }: PagesParams) {
   );
 }
 
-
 type ChapterSummaryProps = {
   version: string;
   book: string;
@@ -284,13 +319,7 @@ type ChapterSummaryProps = {
 };
 
 const ChapterSummary = memo(({ version, book, chapter }: ChapterSummaryProps) => {
-  return (
-    <BibleChapterSummary
-      version={version}
-      book={book}
-      chapter={chapter}
-    />
-  );
+  return <BibleChapterSummary version={version} book={book} chapter={chapter} />;
 });
 ChapterSummary.displayName = 'ChapterSummary';
 
@@ -303,7 +332,7 @@ type PageProps = {
 
 function Page({ chapter, page, verses, onContextMenu }: PageProps) {
   const flashListRef = useRef<FlashListRef<Verse>>(null);
-  const verseNumberColor = useThemeColor({}, "verseNumber");
+  const verseNumberColor = useThemeColor({}, 'verseNumber');
 
   useEffect(() => {
     flashListRef.current?.scrollToIndex({ index: 0, animated: false });
