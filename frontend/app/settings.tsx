@@ -1,8 +1,7 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Application from 'expo-application';
-import { Alert, Button, ScrollView, StyleSheet, Switch, View } from "react-native";
-import { Picker } from '@react-native-picker/picker';
+import { Alert, Button, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from "react-native";
 
 import { AppTheme, useAppTheme } from "@/hooks/use-app-theme-provider";
 import { useAppPreferences } from "@/hooks/use-app-preferences-provider";
@@ -14,12 +13,12 @@ import { AiModeValues } from "@/constants/ai-modes";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { HorizontalThemedSeparator } from "@/components/ui/themed-separator";
-import { getSupportedBibleVersions } from "@/utilities/get-bible-version-info";
 
 export default function SettingsScreen() {
   const { theme, setTheme } = useAppTheme();
   const backgroundColor = useThemeColor({}, "cardBackground")
   const textColor = useThemeColor({}, "text");
+  const tintColor = useThemeColor({}, "tint");
 
 
   const clearStorage = async () => {
@@ -59,24 +58,21 @@ export default function SettingsScreen() {
         <AppearanceSection
           appTheme={theme}
           headerColor={textColor}
-          pickerColor={textColor}
+          optionColor={textColor}
+          selectedColor={tintColor}
           setAppTheme={setTheme}
         />
-        <HorizontalThemedSeparator marginVertical={0} />
+        <HorizontalThemedSeparator />
         <AiModeSection
           headerColor={textColor}
-          pickerColor={textColor}
-        />
-        <HorizontalThemedSeparator marginVertical={0} />
-        <VersionSection
-          headerColor={textColor}
-          pickerColor={textColor}
+          optionColor={textColor}
+          selectedColor={tintColor}
         />
         <HorizontalThemedSeparator />
-        <View style={{ marginTop: 10 }}>
+        <View style={{ marginTop: 10, alignSelf: "center", width: 200 }}>
           <Button title="Clear App Data" color={Colors.error.text} onPress={clearStorage} />
         </View>
-        <View style={{ marginTop: 20, marginBottom: 30 }}>
+        <View style={{ marginTop: 20, marginBottom: 30, alignSelf: "center", width: 200 }}>
           <Button title="About" onPress={showAbout} />
         </View>
       </ScrollView>
@@ -87,62 +83,66 @@ export default function SettingsScreen() {
 type AppearanceSectionProps = {
   appTheme: AppTheme;
   headerColor: string;
-  pickerColor: string;
+  optionColor: string;
+  selectedColor: string;
   setAppTheme: (theme: AppTheme) => void
 }
 
-const AppearanceSection = ({ appTheme, headerColor, pickerColor, setAppTheme }: AppearanceSectionProps) => {
+const AppearanceSection = ({ appTheme, headerColor, optionColor, selectedColor, setAppTheme }: AppearanceSectionProps) => {
   const themeOptions = ["light", "dark", "sepia", "system"] as const;
   const themeOptionLabels = ["Light Mode", "Dark Mode", "Reading Mode", "System Default"] as const;
 
   return (
-    <View>
-      <ThemedText type="subtitle" style={{ color: headerColor, width: '100%', zIndex: 99999 }}>
+    <>
+      <ThemedText type="subtitle" style={[styles.header, { color: headerColor }]}>
         Appearance
       </ThemedText>
-      <Picker
-        selectedValue={appTheme}
-        style={{ marginTop: -10, marginHorizontal: 20 }}
-        itemStyle={{ borderRadius: 200, color: pickerColor, backgroundColor: 'transparent', fontWeight: 'bold' }}
-        onValueChange={(theme) => setAppTheme(theme)}
-      >
-        {themeOptions.map((option, index) => {
-          return (
-            <Picker.Item key={option} label={themeOptionLabels[index]} value={option} />
-          );
-        })}
-      </Picker>
-    </View>
+      {themeOptions.map((option, index) => {
+        const isSelected = appTheme === option;
+        return (
+          <TouchableOpacity
+            key={option}
+            style={[styles.optionButton, { borderColor: isSelected ? selectedColor : "transparent" }]}
+            onPress={() => setAppTheme(option)}
+          >
+            <ThemedText style={{ color: isSelected ? selectedColor : optionColor }}>
+              {themeOptionLabels[index]}
+            </ThemedText>
+          </TouchableOpacity>
+        );
+      })}
+    </>
   );
 };
 
 type AiModeSectionProps = {
   headerColor: string;
-  pickerColor: string;
+  optionColor: string;
+  selectedColor: string;
 }
 
-const AiModeSection = ({ headerColor, pickerColor }: AiModeSectionProps) => {
+const AiModeSection = ({ headerColor, optionColor, selectedColor }: AiModeSectionProps) => {
   const { aiMode, setAiMode, allowThinkingSound, setAllowThinkingSound } = useAppPreferences();
 
   return (
-    <>
-      <View style={{ marginTop: 20 }}>
-        <ThemedText type="subtitle" style={{ color: headerColor, marginBottom: 0, width: '100%', zIndex: 99999 }}>
-          AI Mode
-        </ThemedText>
-        <Picker
-          selectedValue={aiMode}
-          onValueChange={(mode) => setAiMode(mode)}
-          style={{ marginTop: -40, marginHorizontal: 20 }}
-          itemStyle={{ borderRadius: 200, color: pickerColor, backgroundColor: 'transparent', fontWeight: 'bold' }}
-        >
-          {AiModeValues.map((option) => {
-            return (
-              <Picker.Item key={option} label={option.charAt(0).toUpperCase() + option.slice(1)} value={option} />
-            );
-          })}
-        </Picker>
-      </View>
+    <View style={{ marginTop: 10 }}>
+      <ThemedText type="subtitle" style={[styles.header, { color: headerColor }]}>
+        AI Mode
+      </ThemedText>
+      {AiModeValues.map((option) => {
+        const isSelected = aiMode === option;
+        return (
+          <TouchableOpacity
+            key={option}
+            style={[styles.optionButton, { borderColor: isSelected ? selectedColor : "transparent" }]}
+            onPress={() => setAiMode(option)}
+          >
+            <ThemedText style={{ color: isSelected ? selectedColor : optionColor }}>
+              {option.charAt(0).toUpperCase() + option.slice(1)}
+            </ThemedText>
+          </TouchableOpacity>
+        );
+      })}
       <View style={styles.soundToggleContainer}>
         <ThemedText style={styles.soundToggleLabel}>Enable Thinking Sound</ThemedText>
         <Switch
@@ -150,35 +150,6 @@ const AiModeSection = ({ headerColor, pickerColor }: AiModeSectionProps) => {
           onValueChange={(value) => setAllowThinkingSound(value)}
         />
       </View>
-    </>
-  );
-};
-
-type VersionSectionProps = {
-  headerColor: string;
-  pickerColor: string;
-}
-
-const VersionSection = ({ headerColor, pickerColor }: VersionSectionProps) => {
-  const { version, setVersion } = useAppPreferences();
-
-  return (
-    <View style={{ marginTop: 20 }}>
-      <ThemedText type="subtitle" style={{ color: headerColor }}>
-        Bible Version
-      </ThemedText>
-      <Picker
-        selectedValue={version}
-        style={{ marginVertical: -10, marginHorizontal: 20 }}
-        itemStyle={{ borderRadius: 200, color: pickerColor, backgroundColor: 'transparent', fontWeight: 'bold', width: '100%', zIndex: 99999 }}
-        onValueChange={(version) => setVersion(version)}
-      >
-        {getSupportedBibleVersions().map((version) => {
-          return (
-            <Picker.Item key={version.key} label={version.fullname} value={version.key} />
-          );
-        })}
-      </Picker>
     </View>
   );
 };
@@ -189,6 +160,18 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     padding: 20,
+  },
+  header: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+  optionButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderWidth: 2,
+    borderRadius: 8,
+    marginVertical: 6,
   },
   soundToggleContainer: {
     flexDirection: "row",
