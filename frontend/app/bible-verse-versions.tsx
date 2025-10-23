@@ -13,7 +13,7 @@ import { getBibleVersionDisplayName } from '@/utilities/get-bible-version-info';
 
 import { Verse } from '@/types/verse';
 
-type SimilarBibleVerseRouteParams = {
+type BibleVersVersioneRouteParams = {
   version: string;
   book: string;
   chapter: string;
@@ -23,7 +23,7 @@ type SimilarBibleVerseRouteParams = {
 
 export default function BibleVerseVersions() {
   const { version, book, chapter, verse, text } =
-    useLocalSearchParams<SimilarBibleVerseRouteParams>();
+    useLocalSearchParams<BibleVersVersioneRouteParams>();
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const { aiMode } = useAppPreferences();
