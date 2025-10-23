@@ -38,6 +38,13 @@ export default function RootLayout() {
                 headerShown: false,
               }}
             />
+            <Stack.Screen
+              name="bible-verse-versions"
+              options={{
+                presentation: 'modal',
+                headerShown: false,
+              }}
+            />
           </Stack>
           <StatusBar style="auto" />
         </AppThemeProvider>
