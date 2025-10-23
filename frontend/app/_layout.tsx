@@ -1,9 +1,15 @@
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
 
 import { AppThemeProvider } from '@/hooks/use-app-theme-provider';
 import { AppPreferencesProvider } from '@/hooks/use-app-preferences-provider';
+
+SplashScreen.setOptions({
+  duration: 1000,
+  fade: true,
+});
 
 export default function RootLayout() {
   return (

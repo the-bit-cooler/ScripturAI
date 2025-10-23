@@ -13,11 +13,6 @@
       "ios",
       "android"
     ],
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0D1B2A"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.scripturai.maiv",
@@ -36,12 +31,8 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash.png",
-          "imageWidth": 500,
           "resizeMode": "contain",
-          "backgroundColor": "#0D1B2A",
-          "dark": {
-            "backgroundColor": "#0D1B2A"
-          }
+          "backgroundColor": "#121212"
         }
       ],
       "expo-audio"
