@@ -32,6 +32,13 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
+              name="new-bible-verse-translation"
+              options={{
+                presentation: 'modal',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
               name="similar-bible-verses"
               options={{
                 presentation: 'modal',
