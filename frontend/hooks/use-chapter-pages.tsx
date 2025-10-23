@@ -12,10 +12,14 @@ export type ViewableVersesPage = {
   lastVerseVisible: boolean;
 };
 
-async function fetchChapterFromAPI(version: string, book: string, chapter: number): Promise<Verse[]> {
+async function fetchChapterFromAPI(
+  version: string,
+  book: string,
+  chapter: number,
+): Promise<Verse[]> {
   const url = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
   const res = await fetch(url);
-  if (res.ok) return await res.json() as Verse[];
+  if (res.ok) return (await res.json()) as Verse[];
   return [];
 }
 
@@ -59,7 +63,7 @@ export function useChapterPages(version: string, book: string, chapter: number) 
     return () => {
       isMounted = false;
     };
-  }, [version, book, chapter]);
+  }, [version, book, chapter, storageKey]);
 
   // Measure → paginate → cache...
   useEffect(() => {
@@ -92,7 +96,7 @@ export function useChapterPages(version: string, book: string, chapter: number) 
     AsyncStorage.setItem(storageKey, JSON.stringify(pages));
     setPages(pages);
     setLoading(false);
-  }, [heights, verses]);
+  }, [heights, safeViewHeight, storageKey, verses]);
 
   // Prepare hidden measurement view (only when verses need measuring)
   const measureView = useMemo(() => {
@@ -103,8 +107,7 @@ export function useChapterPages(version: string, book: string, chapter: number) 
           position: 'absolute',
           opacity: 0,
           pointerEvents: 'none',
-        }}
-      >
+        }}>
         {verses.map((verse, i) => (
           <View
             key={verse.verse}
@@ -114,8 +117,7 @@ export function useChapterPages(version: string, book: string, chapter: number) 
                 ...prev,
                 [i]: height,
               }));
-            }}
-          >
+            }}>
             <VerseView verse={verse} verseNumberColor="#000" />
           </View>
         ))}

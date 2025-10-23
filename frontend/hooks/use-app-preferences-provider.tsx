@@ -15,17 +15,17 @@ type AppPreferencesContextType = {
 
 const AppPreferencesContext = createContext<AppPreferencesContextType>({
   aiMode: AiModes.devotional, // default
-  setAiMode: async () => { },
+  setAiMode: async () => {},
   allowThinkingSound: true, // default
-  setAllowThinkingSound: async () => { },
+  setAllowThinkingSound: async () => {},
   version: 'KJV', // default
-  setVersion: async () => { },
+  setVersion: async () => {},
 });
 
 export function AppPreferencesProvider({ children }: { children: React.ReactNode }) {
-  const [aiMode, setAiModeState] = useState(AiModes.devotional);  // default
-  const [allowThinkingSound, setAllowThinkingSoundState] = useState(true);  // default
-  const [version, setVersionState] = useState('KJV');  // default
+  const [aiMode, setAiModeState] = useState(AiModes.devotional); // default
+  const [allowThinkingSound, setAllowThinkingSoundState] = useState(true); // default
+  const [version, setVersionState] = useState('KJV'); // default
 
   useEffect(() => {
     (async () => {
@@ -37,7 +37,7 @@ export function AppPreferencesProvider({ children }: { children: React.ReactNode
   useEffect(() => {
     (async () => {
       const stored = await AsyncStorage.getItem(UserPreferences.ai_thinking_sound);
-      if (stored) setAllowThinkingSoundState(stored === "true");
+      if (stored) setAllowThinkingSoundState(stored === 'true');
     })();
   }, []);
 
@@ -55,7 +55,7 @@ export function AppPreferencesProvider({ children }: { children: React.ReactNode
 
   const setAllowThinkingSound = async (value: boolean) => {
     setAllowThinkingSoundState(value); // updates immediately
-    await AsyncStorage.setItem(UserPreferences.ai_thinking_sound, value ? "true" : "false");
+    await AsyncStorage.setItem(UserPreferences.ai_thinking_sound, value ? 'true' : 'false');
   };
 
   const setVersion = async (version: string) => {
@@ -64,7 +64,8 @@ export function AppPreferencesProvider({ children }: { children: React.ReactNode
   };
 
   return (
-    <AppPreferencesContext.Provider value={{ aiMode, setAiMode, allowThinkingSound, setAllowThinkingSound, version, setVersion }}>
+    <AppPreferencesContext.Provider
+      value={{ aiMode, setAiMode, allowThinkingSound, setAllowThinkingSound, version, setVersion }}>
       {children}
     </AppPreferencesContext.Provider>
   );

@@ -1,13 +1,13 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { Appearance } from "react-native";
-import { ThemeProvider as NavThemeProvider } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Appearance } from 'react-native';
+import { ThemeProvider as NavThemeProvider } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { LightNavTheme, DarkNavTheme, SepiaNavTheme } from "@/constants/navigation-theme";
-import { ThemeName } from "@/constants/theme";
-import { UserPreferences } from "@/constants/user-preferences";
+import { LightNavTheme, DarkNavTheme, SepiaNavTheme } from '@/constants/navigation-theme';
+import { ThemeName } from '@/constants/theme';
+import { UserPreferences } from '@/constants/user-preferences';
 
-export type AppTheme = ThemeName | "system";
+export type AppTheme = ThemeName | 'system';
 
 type ThemeContextType = {
   theme: AppTheme;
@@ -17,7 +17,7 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const AppThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setThemeState] = useState<AppTheme>("system");
+  const [theme, setThemeState] = useState<AppTheme>('system');
 
   useEffect(() => {
     (async () => {
@@ -33,15 +33,15 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
 
   // Compute effective theme for NavigationProvider
   const effectiveTheme =
-    theme === "system"
-      ? Appearance.getColorScheme() === "dark"
+    theme === 'system'
+      ? Appearance.getColorScheme() === 'dark'
         ? DarkNavTheme
         : LightNavTheme
-      : theme === "dark"
-      ? DarkNavTheme
-      : theme === "sepia"
-      ? SepiaNavTheme
-      : LightNavTheme;
+      : theme === 'dark'
+        ? DarkNavTheme
+        : theme === 'sepia'
+          ? SepiaNavTheme
+          : LightNavTheme;
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
@@ -53,6 +53,6 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
 // Hook to access theme context
 export const useAppTheme = () => {
   const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useAppTheme must be used inside AppThemeProvider");
+  if (!ctx) throw new Error('useAppTheme must be used inside AppThemeProvider');
   return ctx;
 };

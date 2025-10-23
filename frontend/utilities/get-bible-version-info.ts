@@ -1,13 +1,13 @@
-import bibleVersions from "@/assets/data/bible-versions.json";
+import bibleVersions from '@/assets/data/bible-versions.json';
 
 // Create a type for the bible versions
 interface BibleVersions {
-  [key: string]: { fullname: string; shortname: string; supported: boolean; };
+  [key: string]: { fullname: string; shortname: string; supported: boolean };
 }
 
-interface BibleVersion { 
+interface BibleVersion {
   key: string;
-  fullname: string; 
+  fullname: string;
   shortname: string;
 }
 
@@ -19,7 +19,7 @@ export const getSupportedBibleVersions = (): BibleVersion[] => {
     .map(([key, value]) => ({
       key,
       fullname: value.fullname,
-      shortname: value.shortname
+      shortname: value.shortname,
     }));
 };
 

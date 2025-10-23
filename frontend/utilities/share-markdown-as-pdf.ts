@@ -1,15 +1,11 @@
-import * as Print from "expo-print";
-import * as Sharing from "expo-sharing";
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 import * as Application from 'expo-application';
 import { File, Paths } from 'expo-file-system';
-import { marked } from "marked";
-import { Alert } from "react-native";
+import { marked } from 'marked';
+import { Alert } from 'react-native';
 
-export async function shareMarkdownAsPdf(
-  markdown: string,
-  verseReference: string,
-  aiMode: string
-) {
+export async function shareMarkdownAsPdf(markdown: string, verseReference: string, aiMode: string) {
   try {
     // Convert Markdown → HTML
     const html = `
@@ -74,7 +70,10 @@ export async function shareMarkdownAsPdf(
     const { uri } = await Print.printToFileAsync({ html });
 
     const temp = new File(uri);
-    const file = new File(Paths.cache, `${verseReference.replace(/[\s:]+/g, "-")}-${Application.applicationName}-${aiMode}-Mode.pdf`);
+    const file = new File(
+      Paths.cache,
+      `${verseReference.replace(/[\s:]+/g, '-')}-${Application.applicationName}-${aiMode}-Mode.pdf`,
+    );
 
     // delete old destination (if present) — File.exists is a boolean property
     if (file.exists) {
@@ -89,7 +88,7 @@ export async function shareMarkdownAsPdf(
     } else {
       Alert.alert(`Sorry, Sharing not available.`);
     }
-  } catch (err) {
-    Alert.alert('We are unable to share this at the moment. Please try again at another time.')
+  } catch {
+    Alert.alert('We are unable to share this at the moment. Please try again at another time.');
   }
 }

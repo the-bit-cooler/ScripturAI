@@ -1,4 +1,4 @@
-import bookChapterCounts from "@/assets/data/bible-book-chapter-counts.json";
+import bookChapterCounts from '@/assets/data/bible-book-chapter-counts.json';
 
 // Create a type for the bible versions
 interface BibleBookChapterCount {

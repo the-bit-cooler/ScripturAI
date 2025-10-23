@@ -2,8 +2,8 @@ import {
   DarkTheme as NavDarkTheme,
   DefaultTheme as NavDefaultTheme,
   Theme,
-} from "@react-navigation/native";
-import { Colors } from "./theme";
+} from '@react-navigation/native';
+import { Colors } from './theme';
 
 export const LightNavTheme: Theme = {
   ...NavDefaultTheme, // ✅ brings in fonts + other defaults
@@ -13,7 +13,7 @@ export const LightNavTheme: Theme = {
     background: Colors.light.background,
     card: Colors.light.cardBackground,
     text: Colors.light.text,
-    border: "#E5E5E5",
+    border: '#E5E5E5',
     notification: Colors.light.tint,
   },
 };
@@ -26,7 +26,7 @@ export const DarkNavTheme: Theme = {
     background: Colors.dark.background,
     card: Colors.dark.cardBackground,
     text: Colors.dark.text,
-    border: "#27272A",
+    border: '#27272A',
     notification: Colors.dark.tint,
   },
 };
@@ -39,7 +39,7 @@ export const SepiaNavTheme: Theme = {
     background: Colors.sepia.background,
     card: Colors.sepia.cardBackground,
     text: Colors.sepia.text,
-    border: "#D9C7A3",
+    border: '#D9C7A3',
     notification: Colors.sepia.tint,
   },
 };
