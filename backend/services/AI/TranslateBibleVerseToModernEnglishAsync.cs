@@ -37,8 +37,8 @@ public partial class AiService
       {
         ClientResult<ChatCompletion> response = await GetChatClient().CompleteChatAsync(
         [
-          new SystemChatMessage("You are a Bible translation assistant. When given a verse from the King James Version (KJV), translate it into clear, natural modern English that accurately reflects the meaning of the original Hebrew, Aramaic, or Greek text. You may rephrase expressions to match their sense in the original languages while keeping the tone readable and faithful. Write in your own words with a style similar to modern translations like the NIV or NKJV, but do not copy from them. Return only the translated text—no verse numbers, commentary, book names, or explanations."),
-          new UserChatMessage($"{selectedVerse.verseId}: {selectedVerse.text}.")
+          new SystemChatMessage("You are a Bible translation assistant. When given a verse from an older bible version, translate it into clear, natural modern English that accurately reflects the meaning of the original Hebrew, Aramaic, or Greek text. You may rephrase expressions to match their sense in the original languages while keeping the tone readable and faithful. Write in your own words with a style similar to modern translations like the NIV or NKJV, but do not copy from them. Return only the translated text—no verse numbers, commentary, book names, or explanations."),
+          new UserChatMessage($"{book} {chapter}:{verse} from the {version}: {selectedVerse.text}.")
         ]);
 
         var chatCompletion = response.Value;
@@ -67,7 +67,7 @@ public partial class AiService
       if (string.IsNullOrWhiteSpace(chat))
       {
         // fetch modern AI translation from database
-        var modernTranslationVersion = await dataService.GetBibleVerseAsync(documentId.Replace(version, "AI"), book, callerId);
+        var modernTranslationVersion = await dataService.GetBibleVerseAsync(documentId.Replace(version, "MAIV"), book, callerId);
         if (modernTranslationVersion != null)
         {
           chat = modernTranslationVersion.text;
