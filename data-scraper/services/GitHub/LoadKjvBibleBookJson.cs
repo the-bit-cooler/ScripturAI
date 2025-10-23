@@ -7,7 +7,7 @@ public partial class GitHubService
 {
   public static async Task<List<Verse>> LoadKjvBibleBookJson(string? downloadUrl, string? fileName, bool isForModernTranslation = false)
   {
-    string version = isForModernTranslation ? "AI" : "KJV";
+    string version = isForModernTranslation ? "MAIV" : "KJV";
 
     if (string.IsNullOrEmpty(downloadUrl) || string.IsNullOrEmpty(fileName))
     {
