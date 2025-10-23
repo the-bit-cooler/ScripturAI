@@ -5,16 +5,16 @@ using ScripturAI.Services;
 
 namespace ScripturAI;
 
-public class FindSimilarBibleVerses
+public class FetchSimilarBibleVerses
 {
   private readonly DataService dataService;
 
-  public FindSimilarBibleVerses(DataService dataService)
+  public FetchSimilarBibleVerses(DataService dataService)
   {
     this.dataService = dataService;
   }
 
-  [Function("FindSimilarBibleVerses")]
+  [Function("FetchSimilarBibleVerses")]
   public async Task<IActionResult> Run(
     [HttpTrigger(AuthorizationLevel.Function, "get", Route = "bible/{version}/{book}/{chapter}/{verse}/similar/{mode}")] HttpRequestData req,
     string version,
@@ -33,7 +33,7 @@ public class FindSimilarBibleVerses
       book,
       chapter,
       verse,
-      caller: $"{nameof(FindSimilarBibleVerses)}({aiMode})"
+      caller: $"{nameof(FetchSimilarBibleVerses)}({aiMode})"
     ));
   }
 }
