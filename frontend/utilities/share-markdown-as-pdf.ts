@@ -5,8 +5,31 @@ import { File, Paths } from 'expo-file-system';
 import { marked } from 'marked';
 import { Alert } from 'react-native';
 
-export async function shareMarkdownAsPdf(markdown: string, verseReference: string, aiMode: string) {
+interface Verse {
+  version: string;
+  book: string;
+  chapter: number | string;
+  verse: number | string;
+  text: string;
+}
+
+export async function shareMarkdownAsPdf(
+  markdown: string,
+  title: string,
+  verseReference: string,
+  aiMode: string,
+  verse?: Verse,
+) {
   try {
+    // Create optional verse block in GitHub-style Markdown
+    const verseMarkdown = verse
+      ? `> **${verse.book} ${verse.chapter}:${verse.verse} (${verse.version})**  
+> ${verse.text}\n\n---\n\n`
+      : '';
+
+    // Combine verse block with rest of markdown
+    const fullMarkdown = verseMarkdown + markdown;
+
     // Convert Markdown → HTML
     const html = `
       <html>
@@ -19,7 +42,7 @@ export async function shareMarkdownAsPdf(markdown: string, verseReference: strin
               font-size: 18px;
               color: #222;
               background-color: white;
-              ine-height: 1.5;
+              line-height: 1.5;
             }
             h1 {
               text-align: center;
@@ -33,6 +56,14 @@ export async function shareMarkdownAsPdf(markdown: string, verseReference: strin
               margin-top: 0;
               margin-bottom: 20px;
               color: #555;
+            }
+            blockquote {
+              border-left: 4px solid #d0d7de;
+              margin: 20px 0;
+              padding-left: 16px;
+              color: #57606a;
+              background-color: #f6f8fa;
+              border-radius: 4px;
             }
             pre {
               background-color: #f6f8fa;
@@ -59,9 +90,9 @@ export async function shareMarkdownAsPdf(markdown: string, verseReference: strin
           </style>
         </head>
         <body>
-          <h2>${Application.applicationName} ${aiMode} Mode</h2>
+          <h1>${title}</h1>
           <hr />
-          ${marked.parse(markdown)}
+          ${marked.parse(fullMarkdown)}
         </body>
       </html>
     `;
@@ -75,18 +106,14 @@ export async function shareMarkdownAsPdf(markdown: string, verseReference: strin
       `${verseReference.replace(/[\s:]+/g, '-')}-${Application.applicationName}-${aiMode}-Mode.pdf`,
     );
 
-    // delete old destination (if present) — File.exists is a boolean property
-    if (file.exists) {
-      file.delete(); // synchronous API on File
-    }
-
+    if (file.exists) file.delete();
     temp.copy(file);
 
-    // Share the temp file directly
+    // Share the PDF
     if (await Sharing.isAvailableAsync()) {
       await Sharing.shareAsync(file.uri);
     } else {
-      Alert.alert(`Sorry, Sharing not available.`);
+      Alert.alert('Sorry, Sharing not available.');
     }
   } catch {
     Alert.alert('We are unable to share this at the moment. Please try again at another time.');

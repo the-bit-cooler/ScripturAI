@@ -75,7 +75,19 @@ export default function BibleVerseExplanation() {
 
   const sharePdf = async () => {
     if (explanation)
-      await shareMarkdownAsPdf(explanation, `${book} ${chapter}:${verse} (${version})`, aiMode);
+      await shareMarkdownAsPdf(
+        explanation,
+        'Explain Verse',
+        `${book} ${chapter}:${verse} (${version})`,
+        aiMode,
+        {
+          version,
+          book,
+          chapter,
+          verse,
+          text,
+        },
+      );
   };
 
   return (

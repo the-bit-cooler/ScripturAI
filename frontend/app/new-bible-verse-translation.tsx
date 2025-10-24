@@ -59,7 +59,7 @@ export default function NewBibleVerseTranslation() {
 
   useEffect(() => {
     const loadNewTranslation = async () => {
-      const cacheKey = `${version}:${book}:${chapter}:${verse}:Explanation:${aiMode}`;
+      const cacheKey = `${version}:${book}:${chapter}:${verse}:Translation:${aiMode}`;
       const cached = await AsyncStorage.getItem(cacheKey);
       if (cached) {
         setTranslation(cached);
@@ -75,7 +75,19 @@ export default function NewBibleVerseTranslation() {
 
   const sharePdf = async () => {
     if (translation)
-      await shareMarkdownAsPdf(translation, `${book} ${chapter}:${verse} (${version})`, aiMode);
+      await shareMarkdownAsPdf(
+        translation,
+        'New Translation',
+        `${book} ${chapter}:${verse} (${version})`,
+        aiMode,
+        {
+          version,
+          book,
+          chapter,
+          verse,
+          text,
+        },
+      );
   };
 
   return (

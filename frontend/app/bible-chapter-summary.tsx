@@ -67,7 +67,13 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
   }, [fetchBibleChapterSummary, version, book, chapter, aiMode]);
 
   const sharePdf = async () => {
-    if (summary) await shareMarkdownAsPdf(summary, `${book} ${chapter} (${version})`, aiMode);
+    if (summary)
+      await shareMarkdownAsPdf(
+        summary,
+        `Summary of ${book} ${chapter} (${version})`,
+        `${book} ${chapter} (${version})`,
+        aiMode,
+      );
   };
 
   return (
