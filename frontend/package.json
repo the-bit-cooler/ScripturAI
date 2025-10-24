@@ -13,11 +13,11 @@
     "export:clear": "npx expo export --clear",
     "env-local:generate": "bash scripts/generate-env.sh",
     "env-remote:list": "eas env:list --include-sensitive",
-    "ios:preview": "eas build --platform ios --profile preview",
-    "ios:production": "eas build --platform ios --profile production",
+    "ios:preview": "npm run install:check && eas build --platform ios --profile preview",
+    "ios:production": "npm run install:check && eas build --platform ios --profile production",
     "ios:submit": "eas submit --platform ios",
-    "android:preview": "eas build --platform android --profile preview",
-    "android:production": "eas build --platform android --profile production",
+    "android:preview": "npm run install:check && eas build --platform android --profile preview",
+    "android:production": "npm run install:check && eas build --platform android --profile production",
     "android:submit": "eas submit --platform android"
   },
   "dependencies": {
