@@ -12,6 +12,7 @@ import { shareMarkdownAsPdf } from '@/utilities/share-markdown-as-pdf';
 
 import { useAppPreferences } from '@/hooks/use-app-preferences-provider';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { ThemedText } from '@/components/themed-text';
 
 type BibleChapterSummaryParams = {
   version: string;
@@ -103,40 +104,45 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
         {loading || !summary ? (
           <AiThinkingIndicator />
         ) : (
-          <Markdown
-            style={{
-              body: { color: markdownTextColor, fontSize: 18 },
-              heading1: { color: markdownTextColor, fontSize: 28 },
-              heading2: { color: markdownTextColor, fontSize: 22 },
-              heading3: { color: markdownTextColor },
-              blockquote: {
-                backgroundColor: markdownBackgroundColor,
-                color: markdownTextColor,
-                borderLeftWidth: 4,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-              },
-              code_block: {
-                backgroundColor: markdownBackgroundColor,
-                color: markdownTextColor,
-                borderRadius: 4,
-                paddingHorizontal: 4,
-              },
-              code_inline: {
-                backgroundColor: markdownBackgroundColor,
-                color: markdownTextColor,
-                borderRadius: 4,
-                paddingHorizontal: 4,
-              },
-              fence: {
-                backgroundColor: markdownBackgroundColor,
-                color: markdownTextColor,
-                padding: 8,
-                borderRadius: 8,
-              },
-            }}>
-            {summary}
-          </Markdown>
+          <>
+            <ThemedText type="title" style={styles.title}>
+              Chapter Summary
+            </ThemedText>
+            <Markdown
+              style={{
+                body: { color: markdownTextColor, fontSize: 18 },
+                heading1: { color: markdownTextColor, fontSize: 28 },
+                heading2: { color: markdownTextColor, fontSize: 22 },
+                heading3: { color: markdownTextColor },
+                blockquote: {
+                  backgroundColor: markdownBackgroundColor,
+                  color: markdownTextColor,
+                  borderLeftWidth: 4,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                },
+                code_block: {
+                  backgroundColor: markdownBackgroundColor,
+                  color: markdownTextColor,
+                  borderRadius: 4,
+                  paddingHorizontal: 4,
+                },
+                code_inline: {
+                  backgroundColor: markdownBackgroundColor,
+                  color: markdownTextColor,
+                  borderRadius: 4,
+                  paddingHorizontal: 4,
+                },
+                fence: {
+                  backgroundColor: markdownBackgroundColor,
+                  color: markdownTextColor,
+                  padding: 8,
+                  borderRadius: 8,
+                },
+              }}>
+              {summary}
+            </Markdown>
+          </>
         )}
       </View>
     </ParallaxScrollView>
@@ -150,6 +156,11 @@ const styles = StyleSheet.create({
   headerImage: {
     color: '#808080',
     margin: 'auto',
+  },
+  title: {
+    marginBottom: 6,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   fab: {
     position: 'absolute',

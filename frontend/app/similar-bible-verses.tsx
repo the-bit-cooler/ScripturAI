@@ -72,6 +72,9 @@ export default function SimilarBibleVerses() {
           </View>
         </>
       }>
+      <ThemedText type="title" style={styles.title}>
+        Similar Verses
+      </ThemedText>
       <View style={styles.verseItemContainer}>
         {loading || (verses.length < 0 && <AiThinkingIndicator />)}
         {!loading &&
@@ -117,5 +120,10 @@ const styles = StyleSheet.create({
   },
   verseText: {
     fontSize: 16,
+  },
+  title: {
+    marginBottom: 6,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

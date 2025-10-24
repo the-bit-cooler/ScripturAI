@@ -21,15 +21,6 @@ export async function shareMarkdownAsPdf(
   verse?: Verse,
 ) {
   try {
-    // Create optional verse block in GitHub-style Markdown
-    const verseMarkdown = verse
-      ? `> **${verse.book} ${verse.chapter}:${verse.verse} (${verse.version})**  
-> ${verse.text}\n\n---\n\n`
-      : '';
-
-    // Combine verse block with rest of markdown
-    const fullMarkdown = verseMarkdown + markdown;
-
     // Convert Markdown → HTML
     const html = `
       <html>
@@ -90,9 +81,15 @@ export async function shareMarkdownAsPdf(
           </style>
         </head>
         <body>
+          ${
+            verse
+              ? marked.parse(`> **${verse.book} ${verse.chapter}:${verse.verse} (${verse.version})**  
+> ${verse.text}`)
+              : ''
+          }
           <h1>${title}</h1>
           <hr />
-          ${marked.parse(fullMarkdown)}
+          ${marked.parse(markdown)}
         </body>
       </html>
     `;

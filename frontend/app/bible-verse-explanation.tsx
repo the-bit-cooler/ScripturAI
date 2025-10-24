@@ -122,40 +122,45 @@ export default function BibleVerseExplanation() {
         {loading || !explanation ? (
           <AiThinkingIndicator />
         ) : (
-          <Markdown
-            style={{
-              body: { color: markdownTextColor, fontSize: 18 },
-              heading1: { color: markdownTextColor, fontSize: 28 },
-              heading2: { color: markdownTextColor, fontSize: 22 },
-              heading3: { color: markdownTextColor },
-              blockquote: {
-                backgroundColor: markdownBackgroundColor,
-                color: markdownTextColor,
-                borderLeftWidth: 4,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-              },
-              code_block: {
-                backgroundColor: markdownBackgroundColor,
-                color: markdownTextColor,
-                borderRadius: 4,
-                paddingHorizontal: 4,
-              },
-              code_inline: {
-                backgroundColor: markdownBackgroundColor,
-                color: markdownTextColor,
-                borderRadius: 4,
-                paddingHorizontal: 4,
-              },
-              fence: {
-                backgroundColor: markdownBackgroundColor,
-                color: markdownTextColor,
-                padding: 8,
-                borderRadius: 8,
-              },
-            }}>
-            {explanation}
-          </Markdown>
+          <>
+            <ThemedText type="title" style={styles.title}>
+              Explain Verse
+            </ThemedText>
+            <Markdown
+              style={{
+                body: { color: markdownTextColor, fontSize: 18 },
+                heading1: { color: markdownTextColor, fontSize: 28 },
+                heading2: { color: markdownTextColor, fontSize: 22 },
+                heading3: { color: markdownTextColor },
+                blockquote: {
+                  backgroundColor: markdownBackgroundColor,
+                  color: markdownTextColor,
+                  borderLeftWidth: 4,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                },
+                code_block: {
+                  backgroundColor: markdownBackgroundColor,
+                  color: markdownTextColor,
+                  borderRadius: 4,
+                  paddingHorizontal: 4,
+                },
+                code_inline: {
+                  backgroundColor: markdownBackgroundColor,
+                  color: markdownTextColor,
+                  borderRadius: 4,
+                  paddingHorizontal: 4,
+                },
+                fence: {
+                  backgroundColor: markdownBackgroundColor,
+                  color: markdownTextColor,
+                  padding: 8,
+                  borderRadius: 8,
+                },
+              }}>
+              {explanation}
+            </Markdown>
+          </>
         )}
       </View>
     </ParallaxScrollView>
@@ -179,6 +184,11 @@ const styles = StyleSheet.create({
   },
   versionHeaderText: {
     opacity: 0.8,
+    textAlign: 'center',
+  },
+  title: {
+    marginBottom: 6,
+    fontWeight: '600',
     textAlign: 'center',
   },
   fab: {
