@@ -1,0 +1,10 @@
+{
+  "name": "maiv",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "data-scraper",
+    "frontend"
+  ],
+  "scripts": {}
+}
