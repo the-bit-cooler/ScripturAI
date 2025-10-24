@@ -27,7 +27,7 @@ public class ExplainBibleVerse
     if (!Enum.TryParse(mode, true, out AiService.Mode aiMode))
       aiMode = AiService.Mode.Devotional; // default fallback
     
-    string userPrompt = $"Explain {book}:{chapter}:{verse} from the {version} version of the Bible.";
+    string userPrompt = $"Explain {book}:{chapter}:{verse} from the {version} version of the Bible. Do not use a title with the verse reference or quote at the top of your GitHub markdown response. Just go right into your explanation.";
     string cacheId = $"{book}:{chapter}:{verse}:{version}";
     string cachePartitionKey = $"{book}:Explanation:{aiMode}";
     string cacheDescription = $"an explanation for {cacheId}";
