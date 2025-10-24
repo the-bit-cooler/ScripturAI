@@ -167,7 +167,7 @@ export default function BibleBookReader() {
                   style={{ opacity: 0.9 }}
                   selectedValue={readingLocation.book}
                   onValueChange={(bk) => {
-                    changeReadingLocation({ ...readingLocation, book: bk, chapter: 1, page: 0 });
+                    changeReadingLocation({ book: bk, chapter: 1, page: 0 });
                   }}
                   itemStyle={{
                     borderRadius: 200,
@@ -184,7 +184,7 @@ export default function BibleBookReader() {
                   style={{ opacity: 0.9 }}
                   selectedValue={readingLocation.chapter}
                   onValueChange={(ch) => {
-                    changeReadingLocation({ ...readingLocation, chapter: ch, page: 0 });
+                    changeReadingLocation({ chapter: ch, page: 0 });
                   }}
                   itemStyle={{
                     borderRadius: 200,
@@ -207,7 +207,7 @@ export default function BibleBookReader() {
       {loading && <CenteredActivityIndicator hint="Loading Book" size="large" />}
       {!loading && readingLocation && (
         <Pages
-          key={`${readingLocation.version}-${readingLocation.book}`}
+          key={`${readingLocation.version}-${readingLocation.book}-${readingLocation.chapter}`}
           readingLocation={readingLocation}
           changeReadingLocation={changeReadingLocation}
         />
@@ -251,7 +251,6 @@ function Pages({ readingLocation, changeReadingLocation }: PagesParams) {
         if (position >= pages.length && offset > 0) {
           if (readingLocation.chapter < chapterCount) {
             changeReadingLocation({
-              ...readingLocation,
               chapter: readingLocation.chapter + 1,
               page: 0,
             });
@@ -259,7 +258,6 @@ function Pages({ readingLocation, changeReadingLocation }: PagesParams) {
             const bookIndex = bibleBooks.indexOf(readingLocation.book);
             if (bookIndex < bibleBooks.length - 1) {
               changeReadingLocation({
-                ...readingLocation,
                 book: bibleBooks[bookIndex + 1],
                 chapter: 1,
                 page: 0,
@@ -271,7 +269,6 @@ function Pages({ readingLocation, changeReadingLocation }: PagesParams) {
         if (position < 0 && offset > 0) {
           if (readingLocation.chapter > 1) {
             changeReadingLocation({
-              ...readingLocation,
               chapter: readingLocation.chapter - 1,
               page: -1,
             });
@@ -281,7 +278,6 @@ function Pages({ readingLocation, changeReadingLocation }: PagesParams) {
               const prevBook = bibleBooks[bookIndex - 1];
               const prevBookChapterCount = getBibleBookChapterCount(prevBook);
               changeReadingLocation({
-                ...readingLocation,
                 book: prevBook,
                 chapter: prevBookChapterCount,
                 page: -1,
@@ -291,7 +287,7 @@ function Pages({ readingLocation, changeReadingLocation }: PagesParams) {
         }
       }}
       onPageSelected={({ nativeEvent: { position } }) => {
-        changeReadingLocation({ ...readingLocation, page: position });
+        changeReadingLocation({ page: position });
       }}>
       <ChapterSummary
         key={`summary-${readingLocation.chapter}`}
