@@ -13,7 +13,7 @@ import { getBibleVersionDisplayName } from '@/utilities/get-bible-version-info';
 
 import { Verse } from '@/types/verse';
 
-type BibleVersVersioneRouteParams = {
+type BibleVersVersionsRouteParams = {
   version: string;
   book: string;
   chapter: string;
@@ -23,7 +23,7 @@ type BibleVersVersioneRouteParams = {
 
 export default function BibleVerseVersions() {
   const { version, book, chapter, verse, text } =
-    useLocalSearchParams<BibleVersVersioneRouteParams>();
+    useLocalSearchParams<BibleVersVersionsRouteParams>();
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const { aiMode } = useAppPreferences();
@@ -78,7 +78,7 @@ export default function BibleVerseVersions() {
           verses.map((verse) => (
             <View style={styles.verseItem} key={verse.version}>
               <ThemedText type="defaultSemiBold" style={styles.verseId}>
-                {getBibleVersionDisplayName(verse.version)}
+                {getBibleVersionDisplayName(verse.version)}:
               </ThemedText>
               <ThemedText style={styles.verseText}>{verse.text}</ThemedText>
             </View>
