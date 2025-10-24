@@ -7,12 +7,12 @@ import Markdown from 'react-native-markdown-display';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import AiThinkingIndicator from '@/components/ui/ai-thinking-indicator';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ThemedText } from '@/components/themed-text';
 
 import { shareMarkdownAsPdf } from '@/utilities/share-markdown-as-pdf';
 
 import { useAppPreferences } from '@/hooks/use-app-preferences-provider';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { ThemedText } from '@/components/themed-text';
 
 type BibleChapterSummaryParams = {
   version: string;
