@@ -11,6 +11,7 @@ import PagerView from 'react-native-pager-view';
 import { CenteredActivityIndicator } from '@/components/ui/centered-activity-indicator';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { VerseView } from '@/components/verse-view';
+import { ThemedText } from '@/components/themed-text';
 import BibleChapterSummary from './bible-chapter-summary';
 
 import { getBibleBookChapterCount } from '@/utilities/get-bible-book-chapter-count';
@@ -118,9 +119,31 @@ export default function BibleBookReader() {
         <>
           <Stack.Screen
             options={{
-              title: `${readingLocation.book} ${readingLocation.chapter}`,
+              headerTitle: () => (
+                <TouchableOpacity
+                  onPress={() => setShowReadingLocationPickerModal(true)}
+                  activeOpacity={0.7}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.05)',
+                    borderRadius: 8,
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                  }}>
+                  <IconSymbol
+                    name="chevron.down"
+                    size={16}
+                    color="#666"
+                    style={{ marginRight: 6 }}
+                  />
+                  <ThemedText type="subtitle">
+                    {`${readingLocation.book} ${readingLocation.chapter}`}
+                  </ThemedText>
+                </TouchableOpacity>
+              ),
               headerLeft: ({ tintColor }) => (
-                <PlatformPressable onPress={() => setShowReadingLocationPickerModal(true)}>
+                <PlatformPressable onPress={() => console.log('Pending implementation')}>
                   <IconSymbol size={34} name="book.fill" color={tintColor!} />
                 </PlatformPressable>
               ),
@@ -134,7 +157,7 @@ export default function BibleBookReader() {
           <Modal
             key="reading-location-picker-modal"
             isVisible={showReadingLocationPickerModal}
-            backdropOpacity={0.05}
+            backdropOpacity={0.02}
             onBackdropPress={() => setShowReadingLocationPickerModal(false)}
             onSwipeComplete={() => setShowReadingLocationPickerModal(false)}
             swipeDirection={['left', 'right']}
@@ -143,7 +166,7 @@ export default function BibleBookReader() {
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
               <View style={{ padding: 16, width: '80%' }}>
                 <Picker
-                  style={{ opacity: 0.9 }}
+                  style={{ opacity: 0.95 }}
                   selectedValue={version}
                   onValueChange={(version) => setVersion(version)}
                   itemStyle={{
@@ -164,7 +187,7 @@ export default function BibleBookReader() {
                   })}
                 </Picker>
                 <Picker
-                  style={{ opacity: 0.9 }}
+                  style={{ opacity: 0.95 }}
                   selectedValue={readingLocation.book}
                   onValueChange={(bk) => {
                     changeReadingLocation({ book: bk, chapter: 1, page: 0 });
@@ -181,7 +204,7 @@ export default function BibleBookReader() {
                   ))}
                 </Picker>
                 <Picker
-                  style={{ opacity: 0.9 }}
+                  style={{ opacity: 0.95 }}
                   selectedValue={readingLocation.chapter}
                   onValueChange={(ch) => {
                     changeReadingLocation({ chapter: ch, page: 0 });
