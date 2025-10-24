@@ -12,7 +12,7 @@ export function useVerseContextMenu() {
   const onContextMenu = useCallback(
     (verse: Verse) => {
       // Build options dynamically
-      const options = ['Explain Verse', 'New Translation', 'Similar Verses', 'Other Versions'];
+      const options = ['Explain Verse', 'New Translation', 'Similar Verses', 'Compare Versions'];
       if (Platform.OS === 'android') options.push('Copy');
       options.push('Share');
 
