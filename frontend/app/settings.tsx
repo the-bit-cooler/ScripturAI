@@ -53,8 +53,8 @@ export default function SettingsScreen() {
 
   const showAbout = () => {
     Alert.alert(
-      `About ${Application.applicationName}`,
-      `App Version ${Application.nativeApplicationVersion}\nBuild Number ${Application.nativeBuildVersion}\n© 2025 The Bit Cooler\n\nIn ❤️❤️ memory of Charlie Kirk`,
+      `${Application.applicationName}: Modern AI Version`,
+      `App Version ${Application.nativeApplicationVersion}\nBuild Number ${Application.nativeBuildVersion}\n© 2025 ScripturAI\n\nIn ❤️❤️ memory of Charlie Kirk`,
     );
   };
 
