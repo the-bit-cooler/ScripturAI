@@ -204,7 +204,7 @@ export default function BibleBookReader() {
           </Modal>
         </>
       )}
-      {loading && <CenteredActivityIndicator hint="Loading Book" size="large" />}
+      {loading && <CenteredActivityIndicator hint="Loading Chapter" size="large" />}
       {!loading && readingLocation && (
         <Pages
           key={`${readingLocation.version}-${readingLocation.book}-${readingLocation.chapter}`}
@@ -235,7 +235,7 @@ function Pages({ readingLocation, changeReadingLocation }: PagesParams) {
 
   return loading || !pages ? (
     <>
-      <CenteredActivityIndicator hint="Loading Book" size="large" />
+      <CenteredActivityIndicator hint="Loading Chapter" size="large" />
       {measureView}
     </>
   ) : (
