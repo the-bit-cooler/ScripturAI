@@ -56,7 +56,7 @@ export function useVerseContextMenu() {
                 },
               });
               break;
-            case 'Other Versions':
+            case 'Compare Versions':
               router.push({
                 pathname: '/bible-verse-versions',
                 params: {
