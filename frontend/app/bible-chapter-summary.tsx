@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { PlatformPressable } from '@react-navigation/elements';
 import Markdown from 'react-native-markdown-display';
+import { Image } from 'expo-image';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import AiThinkingIndicator from '@/components/ui/ai-thinking-indicator';
@@ -23,6 +24,10 @@ type BibleChapterSummaryParams = {
 export default function BibleChapterSummary({ version, book, chapter }: BibleChapterSummaryParams) {
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [headerImageUrl, setHeaderImageUrl] = useState<string>(
+    `${process.env.EXPO_PUBLIC_AZURE_STORAGE_URL}${version}/${book}/${chapter}.png`,
+  );
+  const [imageLoading, setImageLoading] = useState(true);
   const { aiMode } = useAppPreferences();
 
   // ✅ use theme defaults
@@ -46,7 +51,9 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
         setSummary(result);
         setLoading(false);
         await AsyncStorage.setItem(cacheKey, result);
-      } catch {}
+      } catch (err) {
+        console.warn(err);
+      }
     },
     [version, book, chapter, aiMode],
   );
@@ -67,6 +74,24 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
     loadSummary();
   }, [fetchBibleChapterSummary, version, book, chapter, aiMode]);
 
+  useEffect(() => {
+    const loadHeaderImage = async () => {
+      try {
+        // Use your existing API route that returns the blob URL
+        const imageUrl = `${process.env.EXPO_PUBLIC_AZURE_FUNCTION_URL}${version}/${book}/${chapter}/image?code=${process.env.EXPO_PUBLIC_AZURE_FUNCTION_KEY}`;
+        const res = await fetch(imageUrl);
+        if (!res.ok) throw new Error(`Failed to fetch image for ${book} ${chapter}`);
+        const url = await res.text(); // backend returns URL string
+        setHeaderImageUrl(url);
+        setImageLoading(false);
+      } catch (err) {
+        console.warn(err);
+      }
+    };
+
+    loadHeaderImage();
+  }, [version, book, chapter]);
+
   const sharePdf = async () => {
     if (summary)
       await shareMarkdownAsPdf(
@@ -74,8 +99,13 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
         `Summary of ${book} ${chapter} (${version})`,
         `${book} ${chapter} (${version})`,
         aiMode,
+        undefined,
+        headerImageUrl,
       );
   };
+
+  const blurhash =
+    '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
 
   return (
     <ParallaxScrollView
@@ -86,12 +116,30 @@ export default function BibleChapterSummary({ version, book, chapter }: BibleCha
       }}
       headerImage={
         <>
-          <IconSymbol
-            size={220}
-            color={iconColor}
-            name="book.pages.fill"
-            style={styles.headerImage}
-          />
+          {imageLoading ? (
+            // Fallback Icon while image loads
+            <View style={styles.headerImageContainer}>
+              <Image
+                style={styles.headerImage}
+                source={{ uri: headerImageUrl }}
+                placeholder={{ blurhash }}
+                placeholderContentFit="fill"
+                contentFit="fill"
+                transition={1000}
+              />
+            </View>
+          ) : (
+            <View style={styles.headerImageContainer}>
+              <Image
+                style={styles.headerImage}
+                source={{ uri: headerImageUrl }}
+                placeholder={{ blurhash }}
+                placeholderContentFit="fill"
+                contentFit="fill"
+                transition={1000}
+              />
+            </View>
+          )}
           {/* ✅ Floating Share Button */}
           {summary && (
             <PlatformPressable onPress={sharePdf} style={styles.fab} pressOpacity={0.8}>
@@ -153,9 +201,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerImageContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   headerImage: {
-    color: '#808080',
-    margin: 'auto',
+    flex: 1,
+    width: '100%',
+    backgroundColor: '#0553',
   },
   title: {
     marginBottom: 6,

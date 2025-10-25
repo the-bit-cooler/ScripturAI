@@ -19,6 +19,7 @@ export async function shareMarkdownAsPdf(
   verseReference: string,
   aiMode: string,
   verse?: Verse,
+  imageUrl?: string,
 ) {
   try {
     // Convert Markdown → HTML
@@ -71,6 +72,14 @@ export async function shareMarkdownAsPdf(
             p {
               margin-bottom: 12px;
             }
+            img.generated-image {
+              display: block;
+              margin: 0 auto 20px auto;
+              max-width: 100%;
+              height: auto;
+              border-radius: 12px;
+              box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            }
             @page {
               @bottom-center {
                 content: "Page " counter(page) " of " counter(pages);
@@ -81,6 +90,7 @@ export async function shareMarkdownAsPdf(
           </style>
         </head>
         <body>
+        ${imageUrl ? `<img src="${imageUrl}" alt="AI Generated Image" class="generated-image" />` : ''}
           ${
             verse
               ? marked.parse(`> **${verse.book} ${verse.chapter}:${verse.verse} (${verse.version})**  
