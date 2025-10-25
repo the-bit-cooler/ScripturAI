@@ -5,7 +5,7 @@ namespace ScripturAI.Services;
 
 public partial class AiService
 {
-  private readonly TimeSpan imageTtl = TimeSpan.FromDays(30);
+  private readonly TimeSpan imageTtl = TimeSpan.FromDays(180);
 
   internal async Task<string> GenerateBibleChapterImageAsync(
     string version,
@@ -58,13 +58,15 @@ public partial class AiService
         {summary}
       ";
 
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
       GeneratedImage image = await GetImageClient().GenerateImageAsync(
         prompt,
         new ImageGenerationOptions
         {
-          Size = GeneratedImageSize.W1024xH1024
+          Size = GeneratedImageSize.W1536xH1024
         }
       );
+#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
       // 5️⃣ Upload to AzureWebJobsStorage
       using var stream = new MemoryStream();
